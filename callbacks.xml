@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<?xml-stylesheet type="text/xsl" href="callbacks.xsl"?>
+
+<plugin name="Octomap" author="federico.ferri.it@gmail.com">
+    <command name="create">
+        <description>Create an OcTree.</description>
+        <params>
+            <param name="resolution" type="float">
+                <description>resolution</description>
+            </param>
+        </params>
+        <return>
+            <param name="octreeHandle" type="int">
+                <description>a handle to the created OcTree</description>
+            </param>
+        </return>
+    </command>
+    <command name="createFromScene">
+        <description>Create an OcTree from current scene.</description>
+        <params>
+            <param name="resolution" type="float">
+                <description>resolution</description>
+            </param>
+            <param name="boundsMin" type="table" item-type="float">
+                <description>sets the bounding box minimum</description>
+            </param>
+            <param name="boundsMax" type="table" item-type="float">
+                <description>sets the bounding box maximum</description>
+            </param>
+        </params>
+        <return>
+            <param name="octreeHandle" type="int">
+                <description>a handle to the created OcTree</description>
+            </param>
+        </return>
+    </command>
+    <command name="destroy">
+        <description>Destroy the spacified OcTree.<br /><br />Note: OcTree objects created during simulation are automatically destroyed when simulation ends.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="clear">
+        <description>Deletes the complete tree structure.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="coordToKey">
+        <description>Converts from a single coordinate into a key (both discrete and 3D) at a given depth.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="coord" type="table" item-type="float">
+                <description>a table of 3 float elements indicating the 3D position</description>
+            </param>
+            <param name="depth" type="int">
+                <description>non-negative depth</description>
+            </param>
+        </params>
+        <return>
+            <param name="key" type="table" item-type="int">
+                <description>a table of 3 integer elements</description>
+            </param>
+        </return>
+    </command>
+    <command name="keyToCoord">
+        <description>converts from a key at a given depth into a coordinate corresponding to the key's center</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="key" type="table" item-type="int">
+                <description>a table of 3 integer elements indicating the 3D key</description>
+            </param>
+            <param name="depth" type="int">
+                <description>non-negative depth</description>
+            </param>
+        </params>
+        <return>
+            <param name="coord" type="table" item-type="float">
+                <description>a table of 3 float elements</description>
+            </param>
+        </return>
+    </command>
+    <command name="deleteNode">
+        <description>Delete a node (if exists) given a 3d point.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="coord" type="table" item-type="float">
+                <description>a table of 3 float elements indicating the 3D coord</description>
+            </param>
+            <param name="depth" type="int" default="0">
+                <description>non-negative depth (default: 0)</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="deleteNodeWithKey">
+        <description>Delete a node (if exists) given a 3d key.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="key" type="table" item-type="int">
+                <description>a table of 3 integer elements indicating the 3D key</description>
+            </param>
+            <param name="depth" type="int" default="0">
+                <description>non-negative depth (default: 0)</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="getMetricBounds">
+        <description>Get bounding box of all known space.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="boundsMin" type="table" item-type="float">
+                <description>minimum value of the bounding box of all known space in x, y, z</description>
+            </param>
+            <param name="boundsMax" type="table" item-type="float">
+                <description>maximum value of the bounding box of all known space in x, y, z</description>
+            </param>
+            <param name="size" type="table" item-type="float">
+                <description>Size of OcTree (all known space) in meters for x, y and z dimension.</description>
+            </param>
+        </return>
+    </command>
+    <command name="getNodeSize">
+        <description>Get size of the node.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="depth" type="int" default="0">
+                <description>non-negative depth (default: 0)</description>
+            </param>
+        </params>
+        <return>
+            <param name="size" type="float">
+                <description>size of the node</description>
+            </param>
+        </return>
+    </command>
+    <command name="getNumLeafNodes">
+        <description>Traverses the tree to calculate the total number of leaf nodes.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="n" type="int">
+                <description>Number of leaf nodes</description>
+            </param>
+        </return>
+    </command>
+    <command name="getSize">
+        <description>Get size of the OcTree.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="size" type="int">
+                <description>Size of OcTree</description>
+            </param>
+        </return>
+    </command>
+    <command name="getVolume">
+        <description>Get volume of the OcTree.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="volume" type="float">
+                <description>Volume of OcTree</description>
+            </param>
+        </return>
+    </command>
+    <command name="getResolution">
+        <description>Get the resolution of the OcTree.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="res" type="float">
+                <description>resolution of the OcTree</description>
+            </param>
+        </return>
+    </command>
+    <command name="getTreeDepth">
+        <description>Get the depth of the OcTree.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="depth" type="int">
+                <description>depth of the OcTree</description>
+            </param>
+        </return>
+    </command>
+    <command name="getTreeType">
+        <description>Get the type of the OcTree.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="treeType" type="string">
+                <description>resolution of the OcTree</description>
+            </param>
+        </return>
+    </command>
+    <command name="prune">
+        <description>Lossless compression of the octree: A node will replace all of its eight children if they have identical values.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="updateNode">
+        <description>Update occupancy value of a node identified by 3D coords.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="coord" type="table" item-type="float">
+                <description>a table of 3 float elements indicating the 3D coord</description>
+            </param>
+            <param name="occupancy" type="bool">
+                <description>occupancy value for node</description>
+            </param>
+            <param name="mode" type="int" default="37402">
+                <description>if mode == sim_octomap_occupancy (default) then the boolean occupancy value will be used; if sim_octomap_log_odds, then the log_odds value will be used.</description>
+            </param>
+            <param name="log_odds" type="float" default="0.0">
+                <description>0 for failure</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="updateNodeWithKey">
+        <description>Update occupancy value of a node identified by 3D key.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="key" type="table" item-type="int">
+                <description>a table of 3 integer elements indicating the 3D key</description>
+            </param>
+            <param name="occupancy" type="bool">
+                <description>occupancy value for node</description>
+            </param>
+            <param name="mode" type="int" default="37402">
+                <description>if mode == sim_octomap_occupancy (default) then the boolean occupancy value will be used; if sim_octomap_log_odds, then the log_odds value will be used.</description>
+            </param>
+            <param name="log_odds" type="float" default="0.0">
+                <description>0 for failure</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="insertPointCloud">
+        <description>Integrate a Pointcloud (in global reference frame). Special care is taken that each voxel in the map is updated only once, and occupied nodes have a preference over free ones. This avoids holes in the floor from mutual deletion.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="origin" type="table" item-type="float">
+                <description>a table of size 3 representing the sensor origin in global coordinates</description>
+            </param>
+            <param name="points" type="table" item-type="float">
+                <description>a table whose size is multiple of 3, containing the points in global coordinates</description>
+            </param>
+            <param name="maxRange" type="int" default="-1">
+                <description>maximum range for how long individual beams are inserted (default -1: complete beam)</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="castRay">
+        <description>Performs raycasting in 3d: A ray is cast from origin with a given direction, the first occupied cell is returned (as center coordinate). If the starting coordinate is already occupied in the tree, this coordinate will be returned as a hit.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="origin" type="table" item-type="float">
+                <description>a table of size 3 representing the ray origin in global coordinates</description>
+            </param>
+            <param name="direction" type="table" item-type="float">
+                <description>a table of size 3 representing the ray direction (does not need to be normalized)</description>
+            </param>
+            <param name="ignoreUnknownCells" type="bool" default="false">
+                <description>whether unknown cells are ignored. If false (default), the raycast aborts when an unknown cell is hit.</description>
+            </param>
+            <param name="maxRange" type="float" default="-1">
+                <description>maximum range after which the raycast is aborted (negative value: no limit, default)</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+            <param name="end" type="table" item-type="float">
+                <description>the center of the cell that was hit by the ray, if successful</description>
+            </param>
+        </return>
+    </command>
+    <command name="search">
+        <description>Destroy the spacified OcTree.<br /><br />Note: OcTree objects created during simulation are automatically destroyed when simulation ends.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="point" type="table" item-type="float">
+                <description>a table of size 3 representing the ray origin in global coordinates</description>
+            </param>
+            <param name="depth" type="int" default="0">
+                <description>Search depth (depth == 0: search full tree depth)</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="write">
+        <description>Write file header and complete tree to file (serialization).</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="filename" type="string">
+                <description>file name</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="writeBinary">
+        <description>Write file header and complete tree to file (serialization).</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="filename" type="string">
+                <description>file name</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <enum name="UpdateMode" item-prefix="sim_octomap_" base="37401">
+        <item name="log_odds">
+        </item>
+        <item name="occupancy">
+        </item>
+    </enum>
+    <script-function name="goalCallback">
+        <description>Callback for checking if the goal is satisfied.</description>
+        <params>
+            <param name="state" type="table" item-type="float">
+                <description>the state to test for goal satisfaction</description>
+            </param>
+        </params>
+        <return>
+            <param name="satisfied" type="bool">
+                <description>true if satisfied, false otherwise</description>
+            </param>
+            <param name="distance" type="float">
+                <description>distance to goal, if it is known. A constant value can be returned otherwise, but the performance of the algorithm will be worse.</description>
+            </param>
+        </return>
+    </script-function>
+</plugin>
