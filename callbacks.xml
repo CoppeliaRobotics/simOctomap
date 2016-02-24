@@ -362,25 +362,6 @@
             </param>
         </return>
     </command>
-    <command name="search">
-        <description>Destroy the spacified OcTree.<br /><br />Note: OcTree objects created during simulation are automatically destroyed when simulation ends.</description>
-        <params>
-            <param name="octreeHandle" type="int">
-                <description>handle to OcTree</description>
-            </param>
-            <param name="point" type="table" item-type="float">
-                <description>a table of size 3 representing the ray origin in global coordinates</description>
-            </param>
-            <param name="depth" type="int" default="0">
-                <description>Search depth (depth == 0: search full tree depth)</description>
-            </param>
-        </params>
-        <return>
-            <param name="result" type="int" default="0">
-                <description>0 for failure</description>
-            </param>
-        </return>
-    </command>
     <command name="write">
         <description>Write file header and complete tree to file (serialization).</description>
         <params>
@@ -423,6 +404,44 @@
         <return>
             <param name="handle" type="int" default="0">
                 <description>0 for failure, otherwise the handle to the drawing object</description>
+            </param>
+        </return>
+    </command>
+    <command name="isOccupied">
+        <description>Test coordinates for occupancy.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="coord" type="table" item-type="float">
+                <description>a table of 3 float elements indicating the 3D coord</description>
+            </param>
+            <param name="depth" type="int" default="0">
+                <description>Search depth (depth == 0: search full tree depth)</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 if not occupied, 1 if occupied, -1 if unknown</description>
+            </param>
+        </return>
+    </command>
+    <command name="isOccupiedKey">
+        <description>Test coordinates for occupancy.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="key" type="table" item-type="int">
+                <description>a table of 3 integer elements indicating the 3D key</description>
+            </param>
+            <param name="depth" type="int" default="0">
+                <description>Search depth (depth == 0: search full tree depth)</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 if not occupied, 1 if occupied, -1 if unknown</description>
             </param>
         </return>
     </command>

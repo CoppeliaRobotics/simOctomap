@@ -503,26 +503,6 @@ void castRay(SLuaCallBack *p, const char *cmd, castRay_in *in, castRay_out *out)
     simSetLastError(cmd, "not implemented yet");
 }
 
-void search(SLuaCallBack *p, const char *cmd, search_in *in, search_out *out)
-{
-    OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
-    if(!o) return;
-
-    if(in->point.size() != 3)
-    {
-        simSetLastError(cmd, "point must be a table of size 3");
-        return;
-    }
-
-    if(in->depth < 0)
-    {
-        simSetLastError(cmd, "depth must be non negative");
-        return;
-    }
-
-    simSetLastError(cmd, "not implemented yet");
-}
-
 void write(SLuaCallBack *p, const char *cmd, write_in *in, write_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
@@ -575,6 +555,38 @@ void addDrawingObject(SLuaCallBack *p, const char *cmd, addDrawingObject_in *in,
     }
 
     out->handle = handle;
+}
+
+void isOccupied(SLuaCallBack *p, const char *cmd, isOccupied_in *in, isOccupied_out *out)
+{
+    OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
+    if(!o) return;
+    octomap::point3d coord = vectorToPoint(in->coord);
+    octomap::OcTreeNode *node = o->octree->search(coord, in->depth);
+    if(!node)
+    {
+        out->result = -1;
+    }
+    else
+    {
+        out->result = o->octree->isNodeOccupied(node) ? 1 : 0;
+    }
+}
+
+void isOccupiedKey(SLuaCallBack *p, const char *cmd, isOccupiedKey_in *in, isOccupiedKey_out *out)
+{
+    OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
+    if(!o) return;
+    octomap::OcTreeKey key = vectorToKey(in->key);
+    octomap::OcTreeNode *node = o->octree->search(key, in->depth);
+    if(!node)
+    {
+        out->result = -1;
+    }
+    else
+    {
+        out->result = o->octree->isNodeOccupied(node) ? 1 : 0;
+    }
 }
 
 VREP_DLLEXPORT unsigned char v_repStart(void* reservedPointer, int reservedInt)
