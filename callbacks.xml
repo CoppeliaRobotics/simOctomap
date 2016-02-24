@@ -413,6 +413,19 @@
             </param>
         </return>
     </command>
+    <command name="addDrawingObject">
+        <description>Add drawing object for this OcTree.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="handle" type="int" default="0">
+                <description>0 for failure, otherwise the handle to the drawing object</description>
+            </param>
+        </return>
+    </command>
     <enum name="UpdateMode" item-prefix="sim_octomap_" base="37401">
         <item name="log_odds">
         </item>

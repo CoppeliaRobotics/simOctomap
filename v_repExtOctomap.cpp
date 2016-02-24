@@ -539,6 +539,44 @@ void writeBinary(SLuaCallBack *p, const char *cmd, writeBinary_in *in, writeBina
     out->result = 1;
 }
 
+void addDrawingObject(SLuaCallBack *p, const char *cmd, addDrawingObject_in *in, addDrawingObject_out *out)
+{
+    OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
+    if(!o) return;
+
+    simInt handle = simAddDrawingObject(sim_drawing_cubepoints + sim_drawing_itemcolors + sim_drawing_itemsizes, 0, 0.0, -1, 1000000, NULL, NULL, NULL, NULL);
+    simFloat data[10];
+
+    octomap::OcTree::leaf_iterator begin = o->octree->begin(), end = o->octree->end();
+    for(octomap::OcTree::leaf_iterator it = begin; it != end; ++it)
+    {
+        if(!o->octree->isNodeOccupied(*it)) continue;
+        // cube position:
+        data[0] = it.getX();
+        data[1] = it.getY();
+        data[2] = it.getZ();
+        // normal:
+        data[3] = 0;
+        data[4] = 0;
+        data[5] = 1;
+        // color:
+        data[6] = 0;
+        data[7] = it->getValue();
+        data[8] = 1.0 - it->getValue();
+        // size:
+        data[9] = it.getSize();
+
+        simInt ret = simAddDrawingObjectItem(handle, &data[0]);
+        if(ret != 1)
+        {
+            // TODO: set error
+            break;
+        }
+    }
+
+    out->handle = handle;
+}
+
 VREP_DLLEXPORT unsigned char v_repStart(void* reservedPointer, int reservedInt)
 {
     char curDirAndFile[1024];
