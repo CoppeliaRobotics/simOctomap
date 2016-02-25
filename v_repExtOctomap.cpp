@@ -519,10 +519,34 @@ void writeBinary(SLuaCallBack *p, const char *cmd, writeBinary_in *in, writeBina
     out->result = 1;
 }
 
+void valueColor(float value, float& r, float& g, float& b)
+{
+    int fi = int(value * 6.) % 6;
+    float ff = value * 6. - fi;
+    switch(fi) {
+    case 0: r = 1.0;      g = ff;       b = 0.0;      break;
+    case 1: r = 1.0 - ff; g = 1.0;      b = 0.0;      break;
+    case 2: r = 0.0;      g = 1.0;      b = ff;       break;
+    case 3: r = 0.0;      g = 1.0 - ff; b = 1.0;      break;
+    case 4: r = ff;       g = 0.0;      b = 1.0;      break;
+    case 5: r = 1.0;      g = 0.0;      b = 1.0 - ff; break;
+    }
+}
+
 void addDrawingObject(SLuaCallBack *p, const char *cmd, addDrawingObject_in *in, addDrawingObject_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
+
+    if(in->voxelColor == sim_octomap_voxelcolor_flat && in->flatColor.size() != 3)
+    {
+        simSetLastError(cmd, "flatColor must have 3 elements");
+        return;
+    }
+
+    double minX, minY, minZ, sizeX, sizeY, sizeZ;
+    o->octree->getMetricMin(minX, minY, minZ);
+    o->octree->getMetricSize(sizeX, sizeY, sizeZ);
 
     simInt handle = simAddDrawingObject(sim_drawing_cubepoints + sim_drawing_itemcolors + sim_drawing_itemsizes, 0, 0.0, -1, 1000000, NULL, NULL, NULL, NULL);
     simFloat data[10];
@@ -530,7 +554,7 @@ void addDrawingObject(SLuaCallBack *p, const char *cmd, addDrawingObject_in *in,
     octomap::OcTree::leaf_iterator begin = o->octree->begin(in->depth), end = o->octree->end();
     for(octomap::OcTree::leaf_iterator it = begin; it != end; ++it)
     {
-        if(!o->octree->isNodeOccupied(*it)) continue;
+        if(!o->octree->isNodeOccupied(*it) && in->skipFree) continue;
         // cube position:
         data[0] = it.getX();
         data[1] = it.getY();
@@ -540,9 +564,26 @@ void addDrawingObject(SLuaCallBack *p, const char *cmd, addDrawingObject_in *in,
         data[4] = 0;
         data[5] = 1;
         // color:
-        data[6] = 0;
-        data[7] = it->getValue();
-        data[8] = 1.0 - it->getValue();
+        switch(in->voxelColor)
+        {
+            case sim_octomap_voxelcolor_flat:
+                data[6] = in->flatColor[0];
+                data[7] = in->flatColor[1];
+                data[8] = in->flatColor[2];
+                break;
+            case sim_octomap_voxelcolor_x_axis:
+                valueColor((it.getX() - minX) / sizeX, data[6], data[7], data[8]);
+                break;
+            case sim_octomap_voxelcolor_y_axis:
+                valueColor((it.getY() - minY) / sizeY, data[6], data[7], data[8]);
+                break;
+            case sim_octomap_voxelcolor_z_axis:
+                valueColor((it.getZ() - minZ) / sizeZ, data[6], data[7], data[8]);
+                break;
+            case sim_octomap_voxelcolor_value:
+                valueColor(it->getValue(), data[6], data[7], data[8]);
+                break;
+        }
         // size:
         data[9] = it.getSize();
 

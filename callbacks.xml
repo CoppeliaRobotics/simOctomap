@@ -403,6 +403,15 @@
             <param name="depth" type="int" default="0">
                 <description>Traversal depth (depth == 0: maximum depth)</description>
             </param>
+            <param name="skipFree" type="bool" default="true">
+                <description>Skip free voxels</description>
+            </param>
+            <param name="voxelColor" type="int" default="sim_octomap_voxelcolor_flat">
+                <description>Voxel coloring mode. Must be one of sim_octomap_voxelcolor_flat, sim_octomap_voxelcolor_x_axis, sim_octomap_voxelcolor_y_axis, sim_octomap_voxelcolor_z_axis, sim_octomap_voxelcolor_value.</description>
+            </param>
+            <param name="flatColor" type="table" item-type="float" default="{1.0, 0.0, 0.0}">
+                <description>Flat color to use when voxelColor is sim_octomap_voxelcolor_flat</description>
+            </param>
         </params>
         <return>
             <param name="handle" type="int" default="0">
@@ -465,6 +474,18 @@
         <item name="log_odds">
         </item>
         <item name="occupancy">
+        </item>
+    </enum>
+    <enum name="VoxelColor" item-prefix="sim_octomap_voxelcolor_" base="39000">
+        <item name="flat">
+        </item>
+        <item name="x_axis">
+        </item>
+        <item name="y_axis">
+        </item>
+        <item name="z_axis">
+        </item>
+        <item name="value">
         </item>
     </enum>
     <script-function name="goalCallback">
