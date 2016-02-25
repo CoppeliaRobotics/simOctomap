@@ -527,7 +527,7 @@ void addDrawingObject(SLuaCallBack *p, const char *cmd, addDrawingObject_in *in,
     simInt handle = simAddDrawingObject(sim_drawing_cubepoints + sim_drawing_itemcolors + sim_drawing_itemsizes, 0, 0.0, -1, 1000000, NULL, NULL, NULL, NULL);
     simFloat data[10];
 
-    octomap::OcTree::leaf_iterator begin = o->octree->begin(), end = o->octree->end();
+    octomap::OcTree::leaf_iterator begin = o->octree->begin(in->depth), end = o->octree->end();
     for(octomap::OcTree::leaf_iterator it = begin; it != end; ++it)
     {
         if(!o->octree->isNodeOccupied(*it)) continue;
@@ -586,6 +586,31 @@ void isOccupiedKey(SLuaCallBack *p, const char *cmd, isOccupiedKey_in *in, isOcc
     else
     {
         out->result = o->octree->isNodeOccupied(node) ? 1 : 0;
+    }
+}
+
+void f(SLuaCallBack *p, const char *cmd, f_in *in, f_out *out)
+{
+    OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
+    if(!o) return;
+
+    OctreeProxy *r = new OctreeProxy(new octomap::OcTree(o->octree->getResolution()));
+    r->header.handle = nextOctreeHandle++;
+    octrees[r->header.handle] = r;
+    out->octreeHandle = r->header.handle;
+
+    octomap::OcTree::leaf_iterator begin = o->octree->begin(), end = o->octree->end();
+    for(octomap::OcTree::leaf_iterator it = begin; it != end; ++it)
+    {
+        if(!o->octree->isNodeOccupied(*it)) continue;
+
+        octomap::OcTreeKey key = it.getKey();
+        key[2]++;
+        octomap::OcTreeNode *node = o->octree->search(key);
+        if(node && !o->octree->isNodeOccupied(node))
+        {
+            r->octree->updateNode(key, true);
+        }
     }
 }
 

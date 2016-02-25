@@ -400,6 +400,9 @@
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
             </param>
+            <param name="depth" type="int" default="0">
+                <description>Traversal depth (depth == 0: maximum depth)</description>
+            </param>
         </params>
         <return>
             <param name="handle" type="int" default="0">
@@ -442,6 +445,19 @@
         <return>
             <param name="result" type="int" default="0">
                 <description>0 if not occupied, 1 if occupied, -1 if unknown</description>
+            </param>
+        </return>
+    </command>
+    <command name="f">
+        <description>f</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="octreeHandle" type="int">
+                <description>a handle to the created OcTree</description>
             </param>
         </return>
     </command>
