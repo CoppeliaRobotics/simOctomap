@@ -220,7 +220,7 @@ void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, c
     {
         if(in->boundsMin[i] > in->boundsMax[i])
         {
-            simSetLastError(cmd, "bounds min must me strictly lower than max");
+            simSetLastError(cmd, "bounds min must be strictly lower than max");
             return;
         }
     }
