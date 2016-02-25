@@ -521,8 +521,11 @@ void writeBinary(SLuaCallBack *p, const char *cmd, writeBinary_in *in, writeBina
 
 void valueColor(float value, float& r, float& g, float& b)
 {
+    if(value < 0.0) value = 0.0;
+    if(value > 1.0) value = 1.0;
     int fi = int(value * 6.) % 6;
     float ff = value * 6. - fi;
+    if(ff < 0.0) ff += 1.0;
     switch(fi) {
     case 0: r = 1.0;      g = ff;       b = 0.0;      break;
     case 1: r = 1.0 - ff; g = 1.0;      b = 0.0;      break;
