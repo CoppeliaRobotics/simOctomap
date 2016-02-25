@@ -274,8 +274,8 @@
             <param name="occupancy" type="bool">
                 <description>occupancy value for node</description>
             </param>
-            <param name="mode" type="int" default="37402">
-                <description>if mode == sim_octomap_occupancy (default) then the boolean occupancy value will be used; if sim_octomap_log_odds, then the log_odds value will be used.</description>
+            <param name="mode" type="int" default="sim_octomap_update_occupancy">
+                <description>if mode == sim_octomap_update_occupancy (default) then the boolean occupancy value will be used; if sim_octomap_log_odds, then the log_odds value will be used.</description>
             </param>
             <param name="log_odds" type="float" default="0.0">
                 <description>0 for failure</description>
@@ -299,8 +299,8 @@
             <param name="occupancy" type="bool">
                 <description>occupancy value for node</description>
             </param>
-            <param name="mode" type="int" default="37402">
-                <description>if mode == sim_octomap_occupancy (default) then the boolean occupancy value will be used; if sim_octomap_log_odds, then the log_odds value will be used.</description>
+            <param name="mode" type="int" default="sim_octomap_update_occupancy">
+                <description>if mode == sim_octomap_update_occupancy (default) then the boolean occupancy value will be used; if sim_octomap_log_odds, then the log_odds value will be used.</description>
             </param>
             <param name="log_odds" type="float" default="0.0">
                 <description>0 for failure</description>
@@ -470,7 +470,7 @@
             </param>
         </return>
     </command>
-    <enum name="UpdateMode" item-prefix="sim_octomap_" base="37401">
+    <enum name="UpdateMode" item-prefix="sim_octomap_update_" base="37401">
         <item name="log_odds">
         </item>
         <item name="occupancy">

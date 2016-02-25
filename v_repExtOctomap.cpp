@@ -428,11 +428,11 @@ void updateNode(SLuaCallBack *p, const char *cmd, updateNode_in *in, updateNode_
     octomap::point3d coord = vectorToPoint(in->coord);
     switch(in->mode)
     {
-    case sim_octomap_log_odds:
+    case sim_octomap_update_log_odds:
         o->octree->updateNode(coord, in->log_odds);
         out->result = 1;
         break;
-    case sim_octomap_occupancy:
+    case sim_octomap_update_occupancy:
         o->octree->updateNode(coord, in->occupancy);
         out->result = 1;
         break;
@@ -448,11 +448,11 @@ void updateNodeWithKey(SLuaCallBack *p, const char *cmd, updateNodeWithKey_in *i
     octomap::OcTreeKey key = vectorToKey(in->key);
     switch(in->mode)
     {
-    case sim_octomap_log_odds:
+    case sim_octomap_update_log_odds:
         o->octree->updateNode(key, in->log_odds);
         out->result = 1;
         break;
-    case sim_octomap_occupancy:
+    case sim_octomap_update_occupancy:
         o->octree->updateNode(key, in->occupancy);
         out->result = 1;
         break;
