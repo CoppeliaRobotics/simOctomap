@@ -585,7 +585,7 @@ void addDrawingObject(SLuaCallBack *p, const char *cmd, addDrawingObject_in *in,
                 break;
         }
         // size:
-        data[9] = it.getSize();
+        data[9] = it.getSize() * 0.5;
 
         simInt ret = simAddDrawingObjectItem(handle, &data[0]);
         if(ret != 1)
