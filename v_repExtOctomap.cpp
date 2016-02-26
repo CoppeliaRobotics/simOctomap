@@ -305,7 +305,7 @@ void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, c
 
     octomap::OcTree *tree = new octomap::OcTree(in->resolution);
 
-#ifdef FAST_OCCUPANCY_MEASUREMENT
+#ifndef DISABLE_FAST_OCCUPANCY_MEASUREMENT
     // snap bounds to voxel coords at minimum depth:
     int count = 0;
     int depth = 1;
