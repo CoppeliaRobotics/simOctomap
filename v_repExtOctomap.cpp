@@ -208,6 +208,84 @@ simInt createProximitySensor(float size)
     return simCreateProximitySensor(sim_proximitysensor_pyramid_subtype, sim_objectspecialproperty_detectable_all, options, intParams, floatParams, NULL);
 }
 
+octomap::point3d snapCoord(octomap::OcTree *tree, int depth, octomap::point3d coord)
+{
+    octomap::OcTreeKey key = tree->coordToKey(coord, depth);
+    octomap::point3d coord1 = tree->keyToCoord(key, depth);
+    return coord1;
+}
+
+void measureOccupancy(octomap::OcTree *tree, int depth, octomap::point3d coord, const octomap::point3d& boundsMin, const octomap::point3d& boundsMax, std::map<int,simInt>& proximitySensors)
+{
+    double nodeSize = tree->getNodeSize(depth);
+
+    // check if the voxel being measured is completely out of bounds, and in that case skip:
+    if(coord.x() + 0.5 * nodeSize < boundsMin.x() || coord.x() - 0.5 * nodeSize > boundsMax.x()
+            || coord.y() + 0.5 * nodeSize < boundsMin.y() || coord.y() - 0.5 * nodeSize > boundsMax.y()
+            || coord.z() + 0.5 * nodeSize < boundsMin.z() || coord.z() - 0.5 * nodeSize > boundsMax.z())
+        return;
+
+    if(proximitySensors.find(depth) == proximitySensors.end())
+    {
+        proximitySensors[depth] = createProximitySensor(nodeSize);
+    }
+    simInt sens = proximitySensors[depth];
+
+    simFloat p[4];
+    p[0] = coord.x();
+    p[1] = coord.y();
+    p[2] = coord.z();
+    simSetObjectPosition(sens, -1, &p[0]);
+    simInt r = simCheckProximitySensor(sens, sim_handle_all, &p[0]);
+    
+    if(r == 1) // some obstacle detected
+    {
+        if(depth == tree->getTreeDepth()) // maximum depth -> single update
+        {
+            tree->updateNode(coord, true);
+        }
+        else // recursive update
+        {
+            int depth1 = depth + 1;
+            double nodeSize1 = tree->getNodeSize(depth1);
+            double off1 = 0.5 * (nodeSize - nodeSize1);
+            measureOccupancy(tree, depth1, coord + octomap::point3d(-off1, -off1, -off1), boundsMin, boundsMax, proximitySensors);
+            measureOccupancy(tree, depth1, coord + octomap::point3d(+off1, -off1, -off1), boundsMin, boundsMax, proximitySensors);
+            measureOccupancy(tree, depth1, coord + octomap::point3d(-off1, +off1, -off1), boundsMin, boundsMax, proximitySensors);
+            measureOccupancy(tree, depth1, coord + octomap::point3d(+off1, +off1, -off1), boundsMin, boundsMax, proximitySensors);
+            measureOccupancy(tree, depth1, coord + octomap::point3d(-off1, -off1, +off1), boundsMin, boundsMax, proximitySensors);
+            measureOccupancy(tree, depth1, coord + octomap::point3d(+off1, -off1, +off1), boundsMin, boundsMax, proximitySensors);
+            measureOccupancy(tree, depth1, coord + octomap::point3d(-off1, +off1, +off1), boundsMin, boundsMax, proximitySensors);
+            measureOccupancy(tree, depth1, coord + octomap::point3d(+off1, +off1, +off1), boundsMin, boundsMax, proximitySensors);
+        }
+    }
+    else if(r == 0) // no obstacle detected -> mark area as empty
+    {
+        int maxDepth = tree->getTreeDepth();
+        octomap::point3d boundsMinSnap = snapCoord(tree, maxDepth, boundsMin);
+        octomap::point3d boundsMaxSnap = snapCoord(tree, maxDepth, boundsMax);
+        double res = tree->getResolution();
+        double off = 0.5 * (nodeSize - res);
+        double minX = fmax(coord.x() - off, boundsMinSnap.x());
+        double maxX = fmin(coord.x() + off, boundsMaxSnap.x());
+        double minY = fmax(coord.y() - off, boundsMinSnap.y());
+        double maxY = fmin(coord.y() + off, boundsMaxSnap.y());
+        double minZ = fmax(coord.z() - off, boundsMinSnap.z());
+        double maxZ = fmin(coord.z() + off, boundsMaxSnap.z());
+
+        for(double z = minZ; z <= maxZ; z += res)
+        {
+            for(double y = minY; y <= maxY; y += res)
+            {
+                for(double x = minX; x <= maxY; x += res)
+                {
+                    tree->updateNode(x, y, z, false);
+                }
+            }
+        }
+    }
+}
+
 void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, createFromScene_out *out)
 {
     if(in->boundsMin.size() != 3 || in->boundsMax.size() != 3)
@@ -218,7 +296,7 @@ void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, c
 
     for(int i = 0; i < 3; i++)
     {
-        if(in->boundsMin[i] > in->boundsMax[i])
+        if(in->boundsMin[i] >= in->boundsMax[i])
         {
             simSetLastError(cmd, "bounds min must be strictly lower than max");
             return;
@@ -227,6 +305,34 @@ void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, c
 
     octomap::OcTree *tree = new octomap::OcTree(in->resolution);
 
+#ifdef FAST_OCCUPANCY_MEASUREMENT
+    // snap bounds to voxel coords at minimum depth:
+    int count = 0;
+    int depth = 1;
+    octomap::point3d boundsMin(in->boundsMin[0], in->boundsMin[1], in->boundsMin[2]);
+    octomap::point3d boundsMax(in->boundsMax[0], in->boundsMax[1], in->boundsMax[2]);
+    octomap::point3d boundsMinSnap = snapCoord(tree, depth, boundsMin);
+    octomap::point3d boundsMaxSnap = snapCoord(tree, depth, boundsMax);
+    double nodeSize = tree->getNodeSize(depth);
+
+    // V-REP's proximity sensors, by depth:
+    std::map<int,simInt> proximitySensors;
+
+    for(double z = boundsMinSnap.z(); z <= boundsMaxSnap.z(); z += nodeSize)
+    {
+        for(double y = boundsMinSnap.y(); y <= boundsMaxSnap.y(); y += nodeSize)
+        {
+            for(double x = boundsMinSnap.x(); x <= boundsMaxSnap.x(); x += nodeSize)
+            {
+                measureOccupancy(tree, depth, octomap::point3d(x, y, z), boundsMin, boundsMax, proximitySensors);
+            }
+        }
+    }
+
+    for(std::map<int,simInt>::iterator it = proximitySensors.begin(); it != proximitySensors.end(); ++it)
+        simRemoveObject(it->second);
+
+#else
     simInt sens = createProximitySensor(in->resolution);
 
     for(float z = in->boundsMin[2]; z <= in->boundsMax[2]; z += in->resolution)
@@ -248,6 +354,7 @@ void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, c
     }
 
     simRemoveObject(sens);
+#endif
 
     OctreeProxy *o = new OctreeProxy(tree);
     o->header.handle = nextOctreeHandle++;
