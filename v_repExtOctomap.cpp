@@ -61,6 +61,8 @@ LIBRARY vrepLib; // the V-REP library that we will dynamically load and bind
 
 #include "stubs.h"
 
+#define PROXIMITY_SENSOR_INFLATE 0.001
+
 std::string luaTypeToString(simInt x)
 {
     switch(x)
@@ -227,14 +229,14 @@ void measureOccupancy(octomap::OcTree *tree, int depth, octomap::point3d coord, 
 
     if(proximitySensors.find(depth) == proximitySensors.end())
     {
-        proximitySensors[depth] = createProximitySensor(nodeSize * 1.001);
+        proximitySensors[depth] = createProximitySensor(nodeSize + PROXIMITY_SENSOR_INFLATE);
     }
     simInt sens = proximitySensors[depth];
 
     simFloat p[4];
     p[0] = coord.x();
     p[1] = coord.y();
-    p[2] = coord.z() - nodeSize * 0.5; // proximity sensor's origin is in its XY plane!
+    p[2] = coord.z() - nodeSize * 0.5 - PROXIMITY_SENSOR_INFLATE * 0.5; // proximity sensor's origin is in its XY plane!
     simSetObjectPosition(sens, -1, &p[0]);
     simInt r = simCheckProximitySensor(sens, sim_handle_all, &p[0]);
     
@@ -332,7 +334,7 @@ void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, c
         simRemoveObject(it->second);
 
 #else
-    simInt sens = createProximitySensor(in->resolution * 1.001);
+    simInt sens = createProximitySensor(in->resolution + PROXIMITY_SENSOR_INFLATE);
 
     for(float z = in->boundsMin[2]; z <= in->boundsMax[2]; z += in->resolution)
     {
@@ -343,7 +345,7 @@ void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, c
                 simFloat p[4];
                 p[0] = x;
                 p[1] = y;
-                p[2] = z - 0.5 * in->resolution;
+                p[2] = z - 0.5 * in->resolution - 0.5 * PROXIMITY_SENSOR_INFLATE;
                 simSetObjectPosition(sens, -1, &p[0]);
                 simInt r = simCheckProximitySensor(sens, sim_handle_all, &p[0]);
                 bool occ = r == 1;
