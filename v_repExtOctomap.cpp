@@ -234,7 +234,7 @@ void measureOccupancy(octomap::OcTree *tree, int depth, octomap::point3d coord, 
     simFloat p[4];
     p[0] = coord.x();
     p[1] = coord.y();
-    p[2] = coord.z();
+    p[2] = coord.z() - nodeSize * 0.5; // proximity sensor's origin is in its XY plane!
     simSetObjectPosition(sens, -1, &p[0]);
     simInt r = simCheckProximitySensor(sens, sim_handle_all, &p[0]);
     
@@ -277,7 +277,7 @@ void measureOccupancy(octomap::OcTree *tree, int depth, octomap::point3d coord, 
         {
             for(double y = minY; y <= maxY; y += res)
             {
-                for(double x = minX; x <= maxY; x += res)
+                for(double x = minX; x <= maxX; x += res)
                 {
                     tree->updateNode(x, y, z, false);
                 }
@@ -344,7 +344,7 @@ void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, c
                 simFloat p[4];
                 p[0] = x;
                 p[1] = y;
-                p[2] = z;
+                p[2] = z - 0.5 * in->resolution;
                 simSetObjectPosition(sens, -1, &p[0]);
                 simInt r = simCheckProximitySensor(sens, sim_handle_all, &p[0]);
                 bool occ = r == 1;
