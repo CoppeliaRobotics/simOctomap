@@ -630,6 +630,7 @@ void valueColor(float value, float& r, float& g, float& b)
 {
     if(value < 0.0) value = 0.0;
     if(value > 1.0) value = 1.0;
+    value = 1.0 - value;
     int fi = int(value * 6.) % 6;
     float ff = value * 6. - fi;
     if(ff < 0.0) ff += 1.0;
