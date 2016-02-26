@@ -309,7 +309,7 @@ void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, c
 
 #ifndef DISABLE_FAST_OCCUPANCY_MEASUREMENT
     // snap bounds to voxel coords at minimum depth:
-    int depth = 1;
+    int depth = 6;
     octomap::point3d boundsMin(in->boundsMin[0], in->boundsMin[1], in->boundsMin[2]);
     octomap::point3d boundsMax(in->boundsMax[0], in->boundsMax[1], in->boundsMax[2]);
     octomap::point3d boundsMinSnap = snapCoord(tree, depth, boundsMin);
