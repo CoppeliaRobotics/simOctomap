@@ -227,7 +227,7 @@ void measureOccupancy(octomap::OcTree *tree, int depth, octomap::point3d coord, 
 
     if(proximitySensors.find(depth) == proximitySensors.end())
     {
-        proximitySensors[depth] = createProximitySensor(nodeSize);
+        proximitySensors[depth] = createProximitySensor(nodeSize * 1.001);
     }
     simInt sens = proximitySensors[depth];
 
@@ -332,7 +332,7 @@ void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, c
         simRemoveObject(it->second);
 
 #else
-    simInt sens = createProximitySensor(in->resolution);
+    simInt sens = createProximitySensor(in->resolution * 1.001);
 
     for(float z = in->boundsMin[2]; z <= in->boundsMax[2]; z += in->resolution)
     {
