@@ -837,6 +837,19 @@ void search(SLuaCallBack *p, const char *cmd, search_in *in, search_out *out)
     out->node = encodePointer(node);
 }
 
+bool checkChildIndexOrSetError(const char *cmd, int i)
+{
+    if(i < 0 || i >= 8)
+    {
+        simSetLastError(cmd, "child index must be between 0 and 7");
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
 void addValue(SLuaCallBack *p, const char *cmd, addValue_in *in, addValue_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
@@ -849,6 +862,7 @@ void deleteChild(SLuaCallBack *p, const char *cmd, deleteChild_in *in, deleteChi
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
+    if(!checkChildIndexOrSetError(cmd, in->i)) return;
     node->deleteChild(in->i);
     out->result = 1;
 }
@@ -889,6 +903,7 @@ void childExists(SLuaCallBack *p, const char *cmd, childExists_in *in, childExis
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
+    if(!checkChildIndexOrSetError(cmd, in->i)) return;
     out->result = node->childExists(in->i);
 }
 
@@ -903,6 +918,7 @@ void createChild(SLuaCallBack *p, const char *cmd, createChild_in *in, createChi
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
+    if(!checkChildIndexOrSetError(cmd, in->i)) return;
     out->result = node->createChild(in->i);
 }
 
