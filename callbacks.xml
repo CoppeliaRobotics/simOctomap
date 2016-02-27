@@ -4,6 +4,10 @@
 <plugin name="Octomap" author="federico.ferri.it@gmail.com">
     <command name="create">
         <description>Create an OcTree.</description>
+        <see-also>
+            <command name="createFromScene" />
+            <command name="destroy" />
+        </see-also>
         <params>
             <param name="resolution" type="float">
                 <description>resolution</description>
@@ -17,6 +21,10 @@
     </command>
     <command name="createFromScene">
         <description>Create an OcTree from current scene.</description>
+        <see-also>
+            <command name="create" />
+            <command name="destroy" />
+        </see-also>
         <params>
             <param name="resolution" type="float">
                 <description>resolution</description>
@@ -36,6 +44,10 @@
     </command>
     <command name="destroy">
         <description>Destroy the spacified OcTree.<br /><br />Note: OcTree objects created during simulation are automatically destroyed when simulation ends.</description>
+        <see-also>
+            <command name="create" />
+            <command name="createFromScene" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -49,6 +61,12 @@
     </command>
     <command name="clear">
         <description>Deletes the complete tree structure.</description>
+        <see-also>
+            <command name="search" />
+            <command name="deleteNode" />
+            <command name="deleteNodeWithKey" />
+            <command name="deleteChild" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -62,6 +80,9 @@
     </command>
     <command name="coordToKey">
         <description>Converts from a single coordinate into a key (both discrete and 3D) at a given depth.</description>
+        <see-also>
+            <command name="keyToCoord" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -81,6 +102,9 @@
     </command>
     <command name="keyToCoord">
         <description>converts from a key at a given depth into a coordinate corresponding to the key's center</description>
+        <see-also>
+            <command name="coordToKey" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -100,6 +124,9 @@
     </command>
     <command name="deleteNode">
         <description>Delete a node (if exists) given a 3d point.</description>
+        <see-also>
+            <command name="deleteNodeWithKey" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -119,6 +146,9 @@
     </command>
     <command name="deleteNodeWithKey">
         <description>Delete a node (if exists) given a 3d key.</description>
+        <see-also>
+            <command name="deleteNode" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -251,6 +281,12 @@
     </command>
     <command name="prune">
         <description>Lossless compression of the octree: A node will replace all of its eight children if they have identical values.</description>
+        <see-also>
+            <command name="search" />
+            <command name="pruneNode" />
+            <command name="hasChildren" />
+            <command name="collapsible" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -264,6 +300,12 @@
     </command>
     <command name="updateNode">
         <description>Update occupancy value of a node identified by 3D coords.</description>
+        <see-also>
+            <command name="search" />
+            <command name="setValue" />
+            <command name="addValue" />
+            <command name="updateNodeWithKey" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -289,6 +331,12 @@
     </command>
     <command name="updateNodeWithKey">
         <description>Update occupancy value of a node identified by 3D key.</description>
+        <see-also>
+            <command name="search" />
+            <command name="setValue" />
+            <command name="addValue" />
+            <command name="updateNode" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -364,6 +412,9 @@
     </command>
     <command name="write">
         <description>Write file header and complete tree to file (serialization).</description>
+        <see-also>
+            <command name="writeBinary" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -380,6 +431,9 @@
     </command>
     <command name="writeBinary">
         <description>Write file header and complete tree to file (serialization).</description>
+        <see-also>
+            <command name="write" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -421,6 +475,11 @@
     </command>
     <command name="isOccupied">
         <description>Test coordinates for occupancy.</description>
+        <see-also>
+            <command name="isOccupiedKey" />
+            <command name="search" />
+            <command name="getOccupancy" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -440,6 +499,11 @@
     </command>
     <command name="isOccupiedKey">
         <description>Test coordinates for occupancy.</description>
+        <see-also>
+            <command name="isOccupied" />
+            <command name="search" />
+            <command name="getOccupancy" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -459,6 +523,24 @@
     </command>
     <command name="search">
         <description>Search and return a node in the OcTree.</description>
+        <see-also>
+            <command name="addValue" />
+            <command name="deleteChild" />
+            <command name="expandNode" />
+            <command name="setLogOdds" />
+            <command name="setValue" />
+            <command name="updateOccupancyChildren" />
+            <command name="childExists" />
+            <command name="collapsible" />
+            <command name="createChild" />
+            <command name="hasChildren" />
+            <command name="pruneNode" />
+            <command name="getValue" />
+            <command name="getLogOdds" />
+            <command name="getMaxChildLogOdds" />
+            <command name="getMeanChildLogOdds" />
+            <command name="getOccupancy" />
+        </see-also>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
@@ -478,6 +560,11 @@
     </command>
     <command name="addValue">
         <description>adds p to the node's logOdds value (with no boundary / threshold checking!)</description>
+        <see-also>
+            <command name="search" />
+            <command name="setValue" />
+            <command name="getValue" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -494,6 +581,11 @@
     </command>
     <command name="deleteChild">
         <description>Deletes the i-th child of the node</description>
+        <see-also>
+            <command name="search" />
+            <command name="hasChildren" />
+            <command name="createChild" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -510,6 +602,13 @@
     </command>
     <command name="expandNode">
         <description>Expands a node (reverse of pruning): All children are created and their occupancy probability is set to the node's value</description>
+        <see-also>
+            <command name="search" />
+            <command name="pruneNode" />
+            <command name="collapsible" />
+            <command name="hasChildren" />
+            <command name="childExists" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -523,6 +622,11 @@
     </command>
     <command name="setLogOdds">
         <description>sets log odds occupancy of node</description>
+        <see-also>
+            <command name="search" />
+            <command name="getLogOdds" />
+            <command name="getValue" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -539,6 +643,11 @@
     </command>
     <command name="setValue">
         <description>sets value to be stored in the node</description>
+        <see-also>
+            <command name="search" />
+            <command name="getValue" />
+            <command name="addValue" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -555,6 +664,11 @@
     </command>
     <command name="updateOccupancyChildren">
         <description>update this node's occupancy according to its children's maximum occupancy</description>
+        <see-also>
+            <command name="search" />
+            <command name="hasChildren" />
+            <command name="getOccupancy" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -568,6 +682,12 @@
     </command>
     <command name="childExists">
         <description>Safe test to check of the i-th child exists, first tests if there are any children</description>
+        <see-also>
+            <command name="search" />
+            <command name="hasChildren" />
+            <command name="deleteChild" />
+            <command name="createChild" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -584,6 +704,13 @@
     </command>
     <command name="collapsible">
         <description>A node is collapsible if all children exist, don't have children of their own and have the same occupancy value</description>
+        <see-also>
+            <command name="search" />
+            <command name="pruneNode" />
+            <command name="expandNode" />
+            <command name="hasChildren" />
+            <command name="childExists" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -612,7 +739,13 @@
         </return>
     </command>
     <command name="hasChildren">
-        <description></description>
+        <description>check if node has children</description>
+        <see-also>
+            <command name="search" />
+            <command name="childExists" />
+            <command name="createChild" />
+            <command name="deleteChild" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -626,6 +759,12 @@
     </command>
     <command name="pruneNode">
         <description>Prunes a node when it is collapsible</description>
+        <see-also>
+            <command name="prune" />
+            <command name="search" />
+            <command name="collapsible" />
+            <command name="expandNode" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -638,7 +777,12 @@
         </return>
     </command>
     <command name="getValue">
-        <description></description>
+        <description>Get the value of node</description>
+        <see-also>
+            <command name="search" />
+            <command name="getLogOdds" />
+            <command name="setValue" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -651,7 +795,12 @@
         </return>
     </command>
     <command name="getLogOdds">
-        <description></description>
+        <description>Get the log odds of node</description>
+        <see-also>
+            <command name="search" />
+            <command name="getMeanChildLogOdds" />
+            <command name="getMaxChildLogOdds" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -664,7 +813,12 @@
         </return>
     </command>
     <command name="getMaxChildLogOdds">
-        <description></description>
+        <description>Get max child log odds</description>
+        <see-also>
+            <command name="search" />
+            <command name="getLogOdds" />
+            <command name="getMeanChildLogOdds" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -677,7 +831,12 @@
         </return>
     </command>
     <command name="getMeanChildLogOdds">
-        <description></description>
+        <description>Get mean child log odds</description>
+        <see-also>
+            <command name="search" />
+            <command name="getLogOdds" />
+            <command name="getMaxChildLogOdds" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -690,7 +849,12 @@
         </return>
     </command>
     <command name="getOccupancy">
-        <description></description>
+        <description>Get occupancy value</description>
+        <see-also>
+            <command name="search" />
+            <command name="getValue" />
+            <command name="getLogOdds" />
+        </see-also>
         <params>
             <param name="node" type="string">
                 <description>node pointer</description>
@@ -703,7 +867,7 @@
         </return>
     </command>
     <command name="f">
-        <description>f</description>
+        <description></description>
         <params>
             <param name="octreeHandle" type="int">
                 <description>handle to OcTree</description>
