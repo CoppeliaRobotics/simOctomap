@@ -521,9 +521,42 @@
             </param>
         </return>
     </command>
+    <command name="getRoot">
+        <description>Retrieve the root node of the OcTree.</description>
+        <see-also>
+            <command name="search" />
+            <command name="addValue" />
+            <command name="deleteChild" />
+            <command name="expandNode" />
+            <command name="setLogOdds" />
+            <command name="setValue" />
+            <command name="updateOccupancyChildren" />
+            <command name="childExists" />
+            <command name="collapsible" />
+            <command name="createChild" />
+            <command name="hasChildren" />
+            <command name="pruneNode" />
+            <command name="getValue" />
+            <command name="getLogOdds" />
+            <command name="getMaxChildLogOdds" />
+            <command name="getMeanChildLogOdds" />
+            <command name="getOccupancy" />
+        </see-also>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+        </params>
+        <return>
+            <param name="node" type="string" default="&quot;&quot;">
+                <description>a pointer to node, or '' if does not exist</description>
+            </param>
+        </return>
+    </command>
     <command name="search">
         <description>Search and return a node in the OcTree.</description>
         <see-also>
+            <command name="getRoot" />
             <command name="addValue" />
             <command name="deleteChild" />
             <command name="expandNode" />

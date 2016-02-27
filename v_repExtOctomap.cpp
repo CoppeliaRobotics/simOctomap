@@ -820,6 +820,14 @@ void f(SLuaCallBack *p, const char *cmd, f_in *in, f_out *out)
     }
 }
 
+void getRoot(SLuaCallBack *p, const char *cmd, getRoot_in *in, getRoot_out *out)
+{
+    OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
+    if(!o) return;
+    octomap::OcTreeNode *node = o->octree->getRoot();
+    out->node = encodePointer(node);
+}
+
 void search(SLuaCallBack *p, const char *cmd, search_in *in, search_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
