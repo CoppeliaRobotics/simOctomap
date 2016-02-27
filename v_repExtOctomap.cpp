@@ -630,7 +630,14 @@ void insertPointCloud(SLuaCallBack *p, const char *cmd, insertPointCloud_in *in,
         return;
     }
 
-    simSetLastError(cmd, "not implemented yet");
+    int n = in->points.size() / 3;
+    octomap::Pointcloud cloud;
+    for(int i = 0; i < n; i++)
+        cloud.push_back(in->points[i*3+0], in->points[i*3+1], in->points[i*3+2]);
+    octomap::point3d origin = vectorToPoint(in->origin);
+    octomap::pose6d frame_origin(0, 0, 0, 0, 0, 0);
+    o->octree->insertPointCloud(cloud, origin, frame_origin, in->maxRange);
+    out->result = 1;
 }
 
 void castRay(SLuaCallBack *p, const char *cmd, castRay_in *in, castRay_out *out)
@@ -650,7 +657,11 @@ void castRay(SLuaCallBack *p, const char *cmd, castRay_in *in, castRay_out *out)
         return;
     }
 
-    simSetLastError(cmd, "not implemented yet");
+    octomap::point3d origin = vectorToPoint(in->origin);
+    octomap::point3d direction = vectorToPoint(in->direction);
+    octomap::point3d end;
+    out->result = o->octree->castRay(origin, direction, end, in->ignoreUnknownCells, in->maxRange);
+    out->end = pointToVector(end);
 }
 
 void write(SLuaCallBack *p, const char *cmd, write_in *in, write_out *out)

@@ -354,8 +354,8 @@
             </param>
         </params>
         <return>
-            <param name="result" type="int" default="0">
-                <description>0 for failure</description>
+            <param name="result" type="bool" default="false">
+                <description></description>
             </param>
             <param name="end" type="table" item-type="float">
                 <description>the center of the cell that was hit by the ray, if successful</description>
