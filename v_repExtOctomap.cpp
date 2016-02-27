@@ -901,6 +901,41 @@ void pruneNode(SLuaCallBack *p, const char *cmd, pruneNode_in *in, pruneNode_out
     out->result = node->pruneNode();
 }
 
+void getValue(SLuaCallBack *p, const char *cmd, getValue_in *in, getValue_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    out->result = node->getValue();
+}
+
+void getLogOdds(SLuaCallBack *p, const char *cmd, getLogOdds_in *in, getLogOdds_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    out->result = node->getLogOdds();
+}
+
+void getMaxChildLogOdds(SLuaCallBack *p, const char *cmd, getMaxChildLogOdds_in *in, getMaxChildLogOdds_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    out->result = node->getMaxChildLogOdds();
+}
+
+void getMeanChildLogOdds(SLuaCallBack *p, const char *cmd, getMeanChildLogOdds_in *in, getMeanChildLogOdds_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    out->result = node->getMeanChildLogOdds();
+}
+
+void getOccupancy(SLuaCallBack *p, const char *cmd, getOccupancy_in *in, getOccupancy_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    out->result = node->getOccupancy();
+}
+
 VREP_DLLEXPORT unsigned char v_repStart(void* reservedPointer, int reservedInt)
 {
     char curDirAndFile[1024];

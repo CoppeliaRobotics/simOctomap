@@ -637,6 +637,71 @@
             </param>
         </return>
     </command>
+    <command name="getValue">
+        <description></description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="float" default="0.0">
+                <description></description>
+            </param>
+        </return>
+    </command>
+    <command name="getLogOdds">
+        <description></description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="float" default="0.0">
+                <description></description>
+            </param>
+        </return>
+    </command>
+    <command name="getMaxChildLogOdds">
+        <description></description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="float" default="0.0">
+                <description></description>
+            </param>
+        </return>
+    </command>
+    <command name="getMeanChildLogOdds">
+        <description></description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="float" default="0.0">
+                <description></description>
+            </param>
+        </return>
+    </command>
+    <command name="getOccupancy">
+        <description></description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="float" default="0.0">
+                <description></description>
+            </param>
+        </return>
+    </command>
     <command name="f">
         <description>f</description>
         <params>
