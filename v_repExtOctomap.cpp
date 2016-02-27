@@ -36,6 +36,8 @@
 #include <vector>
 #include <map>
 
+#include <boost/algorithm/string/predicate.hpp>
+
 #ifdef _WIN32
     #ifdef QT_COMPIL
         #include <direct.h>
@@ -157,6 +159,46 @@ void destroyTransientObjects(std::map<simInt, T *>& c)
 void destroyTransientObjects()
 {
     destroyTransientObjects(octrees);
+}
+
+const std::string octomap__OcTreeNode__prefix = "octomap::OcTreeNode* 0x";
+
+std::string encodePointer(octomap::OcTreeNode *node)
+{
+    if(node == NULL)
+    {
+        return "";
+    }
+    else
+    {
+        std::stringstream ss;
+        ss << octomap__OcTreeNode__prefix << std::hex << static_cast<void *>(node);
+        return ss.str();
+    }
+}
+
+octomap::OcTreeNode * decodePointer(std::string s)
+{
+    if(boost::starts_with(s, octomap__OcTreeNode__prefix))
+    {
+        unsigned long x;
+        std::stringstream ss;
+        ss << std::hex << s.substr(octomap__OcTreeNode__prefix.size());
+        ss >> x;
+        return reinterpret_cast<octomap::OcTreeNode *>(x);
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+octomap::OcTreeNode * decodePointerOrSetError(const char *cmd, std::string s)
+{
+    octomap::OcTreeNode *ret = decodePointer(s);
+    if(!ret)
+        simSetLastError(cmd, "invalid node pointer");
+    return ret;
 }
 
 void create(SLuaCallBack *p, const char *cmd, create_in *in, create_out *out)
@@ -765,6 +807,98 @@ void f(SLuaCallBack *p, const char *cmd, f_in *in, f_out *out)
             r->octree->updateNode(key, true);
         }
     }
+}
+
+void search(SLuaCallBack *p, const char *cmd, search_in *in, search_out *out)
+{
+    OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
+    if(!o) return;
+    octomap::point3d coord = vectorToPoint(in->coord);
+    octomap::OcTreeNode *node = o->octree->search(coord, in->depth);
+    out->node = encodePointer(node);
+}
+
+void addValue(SLuaCallBack *p, const char *cmd, addValue_in *in, addValue_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    node->addValue(in->v);
+    out->result = 1;
+}
+
+void deleteChild(SLuaCallBack *p, const char *cmd, deleteChild_in *in, deleteChild_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    node->deleteChild(in->i);
+    out->result = 1;
+}
+
+void expandNode(SLuaCallBack *p, const char *cmd, expandNode_in *in, expandNode_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    node->expandNode();
+    out->result = 1;
+}
+
+void setLogOdds(SLuaCallBack *p, const char *cmd, setLogOdds_in *in, setLogOdds_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    node->setLogOdds(in->v);
+    out->result = 1;
+}
+
+void setValue(SLuaCallBack *p, const char *cmd, setValue_in *in, setValue_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    node->setValue(in->v);
+    out->result = 1;
+}
+
+void updateOccupancyChildren(SLuaCallBack *p, const char *cmd, updateOccupancyChildren_in *in, updateOccupancyChildren_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    node->updateOccupancyChildren();
+    out->result = 1;
+}
+
+void childExists(SLuaCallBack *p, const char *cmd, childExists_in *in, childExists_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    out->result = node->childExists(in->i);
+}
+
+void collapsible(SLuaCallBack *p, const char *cmd, collapsible_in *in, collapsible_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    out->result = node->collapsible();
+}
+
+void createChild(SLuaCallBack *p, const char *cmd, createChild_in *in, createChild_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    out->result = node->createChild(in->i);
+}
+
+void hasChildren(SLuaCallBack *p, const char *cmd, hasChildren_in *in, hasChildren_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    out->result = node->hasChildren();
+}
+
+void pruneNode(SLuaCallBack *p, const char *cmd, pruneNode_in *in, pruneNode_out *out)
+{
+    octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
+    if(!node) return;
+    out->result = node->pruneNode();
 }
 
 VREP_DLLEXPORT unsigned char v_repStart(void* reservedPointer, int reservedInt)

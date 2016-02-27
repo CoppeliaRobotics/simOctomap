@@ -457,6 +457,186 @@
             </param>
         </return>
     </command>
+    <command name="search">
+        <description>Search and return a node in the OcTree.</description>
+        <params>
+            <param name="octreeHandle" type="int">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="coord" type="table" item-type="float">
+                <description>a table of 3 float elements indicating the 3D coord</description>
+            </param>
+            <param name="depth" type="int" default="0">
+                <description>Search depth (depth == 0: search full tree depth)</description>
+            </param>
+        </params>
+        <return>
+            <param name="node" type="string" default="&quot;&quot;">
+                <description>a pointer to node, or '' if not found</description>
+            </param>
+        </return>
+    </command>
+    <command name="addValue">
+        <description>adds p to the node's logOdds value (with no boundary / threshold checking!)</description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+            <param name="v" type="float">
+                <description>value to add</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="deleteChild">
+        <description>Deletes the i-th child of the node</description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+            <param name="i" type="int">
+                <description></description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="expandNode">
+        <description>Expands a node (reverse of pruning): All children are created and their occupancy probability is set to the node's value</description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="setLogOdds">
+        <description>sets log odds occupancy of node</description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+            <param name="v" type="float">
+                <description>log-odds value</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="setValue">
+        <description>sets value to be stored in the node</description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+            <param name="v" type="float">
+                <description>value to set</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="updateOccupancyChildren">
+        <description>update this node's occupancy according to its children's maximum occupancy</description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="int" default="0">
+                <description>0 for failure</description>
+            </param>
+        </return>
+    </command>
+    <command name="childExists">
+        <description>Safe test to check of the i-th child exists, first tests if there are any children</description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+            <param name="i" type="int">
+                <description></description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="bool" default="false">
+                <description>true if it exists, false otherwise</description>
+            </param>
+        </return>
+    </command>
+    <command name="collapsible">
+        <description>A node is collapsible if all children exist, don't have children of their own and have the same occupancy value</description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="bool" default="false">
+                <description>true if it is collapsible, false otherwise</description>
+            </param>
+        </return>
+    </command>
+    <command name="createChild">
+        <description>initialize i-th child, allocate children array if needed</description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+            <param name="i" type="int">
+                <description></description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="bool" default="false">
+                <description></description>
+            </param>
+        </return>
+    </command>
+    <command name="hasChildren">
+        <description></description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="bool" default="false">
+                <description>true if it has children, false otherwise</description>
+            </param>
+        </return>
+    </command>
+    <command name="pruneNode">
+        <description>Prunes a node when it is collapsible</description>
+        <params>
+            <param name="node" type="string">
+                <description>node pointer</description>
+            </param>
+        </params>
+        <return>
+            <param name="result" type="bool" default="false">
+                <description></description>
+            </param>
+        </return>
+    </command>
     <command name="f">
         <description>f</description>
         <params>
