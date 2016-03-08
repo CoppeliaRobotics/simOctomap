@@ -65,46 +65,6 @@ LIBRARY vrepLib; // the V-REP library that we will dynamically load and bind
 
 #define PROXIMITY_SENSOR_INFLATE 0.001
 
-std::string luaTypeToString(simInt x)
-{
-    switch(x)
-    {
-    case sim_lua_arg_bool: return "sim_lua_arg_bool";
-    case sim_lua_arg_int: return "sim_lua_arg_int";
-    case sim_lua_arg_float: return "sim_lua_arg_float";
-    case sim_lua_arg_double: return "sim_lua_arg_double";
-    case sim_lua_arg_string: return "sim_lua_arg_string";
-    case sim_lua_arg_charbuff: return "sim_lua_arg_charbuff";
-    case sim_lua_arg_nil: return "sim_lua_arg_nil";
-    case sim_lua_arg_table: return "sim_lua_arg_table";
-    case sim_lua_arg_invalid: return "sim_lua_arg_invalid";
-    }
-    if(x & sim_lua_arg_nil)
-        return luaTypeToString(x & ~sim_lua_arg_nil) + "|" + luaTypeToString(sim_lua_arg_nil);
-    if(x & sim_lua_arg_table)
-        return luaTypeToString(x & ~sim_lua_arg_table) + "|" + luaTypeToString(sim_lua_arg_table);
-    return "???";
-}
-
-std::string luaCallbackToString(SLuaCallBack *c)
-{
-    std::stringstream ss;
-    ss << "{inputArgsTypeAndSize: [";
-    for(int i = 0; i < c->inputArgCount; i++)
-    {
-        ss << (i ? ", " : "") << luaTypeToString(c->inputArgTypeAndSize[2*i]);
-        if(c->inputArgTypeAndSize[1+2*i]) ss << "_" << c->inputArgTypeAndSize[1+2*i];
-    }
-    ss << "], outputArgsTypeAndSize: [";
-    for(int i = 0; i < c->outputArgCount; i++)
-    {
-        ss << (i ? ", " : "") << luaTypeToString(c->outputArgTypeAndSize[2*i]);
-        if(c->outputArgTypeAndSize[1+2*i]) ss << "_" << c->outputArgTypeAndSize[1+2*i];
-    }
-    ss << "]}";
-    return ss.str();
-}
-
 struct LuaCallbackFunction
 {
     // name of the Lua function
@@ -201,7 +161,7 @@ octomap::OcTreeNode * decodePointerOrSetError(const char *cmd, std::string s)
     return ret;
 }
 
-void create(SLuaCallBack *p, const char *cmd, create_in *in, create_out *out)
+void create(SScriptCallBack *p, const char *cmd, create_in *in, create_out *out)
 {
     OctreeProxy *o = new OctreeProxy(new octomap::OcTree(in->resolution));
     o->header.handle = nextOctreeHandle++;
@@ -330,7 +290,7 @@ void measureOccupancy(octomap::OcTree *tree, int depth, octomap::point3d coord, 
     }
 }
 
-void createFromScene(SLuaCallBack *p, const char *cmd, createFromScene_in *in, createFromScene_out *out)
+void createFromScene(SScriptCallBack *p, const char *cmd, createFromScene_in *in, createFromScene_out *out)
 {
     if(in->boundsMin.size() != 3 || in->boundsMax.size() != 3)
     {
@@ -416,7 +376,7 @@ OctreeProxy * getOctreeOrSetError(const char *cmd, simInt octreeHandle)
     return octrees[octreeHandle];
 }
 
-void destroy(SLuaCallBack *p, const char *cmd, destroy_in *in, destroy_out *out)
+void destroy(SScriptCallBack *p, const char *cmd, destroy_in *in, destroy_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -457,7 +417,7 @@ std::vector<int> keyToVector(octomap::OcTreeKey k)
     return v;
 }
 
-void clear(SLuaCallBack *p, const char *cmd, clear_in *in, clear_out *out)
+void clear(SScriptCallBack *p, const char *cmd, clear_in *in, clear_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -465,7 +425,7 @@ void clear(SLuaCallBack *p, const char *cmd, clear_in *in, clear_out *out)
     out->result = 1;
 }
 
-void coordToKey(SLuaCallBack *p, const char *cmd, coordToKey_in *in, coordToKey_out *out)
+void coordToKey(SScriptCallBack *p, const char *cmd, coordToKey_in *in, coordToKey_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -474,7 +434,7 @@ void coordToKey(SLuaCallBack *p, const char *cmd, coordToKey_in *in, coordToKey_
     out->key = keyToVector(key);
 }
 
-void keyToCoord(SLuaCallBack *p, const char *cmd, keyToCoord_in *in, keyToCoord_out *out)
+void keyToCoord(SScriptCallBack *p, const char *cmd, keyToCoord_in *in, keyToCoord_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -483,7 +443,7 @@ void keyToCoord(SLuaCallBack *p, const char *cmd, keyToCoord_in *in, keyToCoord_
     out->coord = pointToVector(coord);
 }
 
-void deleteNode(SLuaCallBack *p, const char *cmd, deleteNode_in *in, deleteNode_out *out)
+void deleteNode(SScriptCallBack *p, const char *cmd, deleteNode_in *in, deleteNode_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -492,7 +452,7 @@ void deleteNode(SLuaCallBack *p, const char *cmd, deleteNode_in *in, deleteNode_
     out->result = 1;
 }
 
-void deleteNodeWithKey(SLuaCallBack *p, const char *cmd, deleteNodeWithKey_in *in, deleteNodeWithKey_out *out)
+void deleteNodeWithKey(SScriptCallBack *p, const char *cmd, deleteNodeWithKey_in *in, deleteNodeWithKey_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -501,7 +461,7 @@ void deleteNodeWithKey(SLuaCallBack *p, const char *cmd, deleteNodeWithKey_in *i
     out->result = 1;
 }
 
-void getMetricBounds(SLuaCallBack *p, const char *cmd, getMetricBounds_in *in, getMetricBounds_out *out)
+void getMetricBounds(SScriptCallBack *p, const char *cmd, getMetricBounds_in *in, getMetricBounds_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -514,56 +474,56 @@ void getMetricBounds(SLuaCallBack *p, const char *cmd, getMetricBounds_in *in, g
     out->size = boost::assign::list_of(sizex)(sizey)(sizez);
 }
 
-void getNodeSize(SLuaCallBack *p, const char *cmd, getNodeSize_in *in, getNodeSize_out *out)
+void getNodeSize(SScriptCallBack *p, const char *cmd, getNodeSize_in *in, getNodeSize_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
     out->size = o->octree->getNodeSize(in->depth);
 }
 
-void getNumLeafNodes(SLuaCallBack *p, const char *cmd, getNumLeafNodes_in *in, getNumLeafNodes_out *out)
+void getNumLeafNodes(SScriptCallBack *p, const char *cmd, getNumLeafNodes_in *in, getNumLeafNodes_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
     out->n = o->octree->getNumLeafNodes();
 }
 
-void getSize(SLuaCallBack *p, const char *cmd, getSize_in *in, getSize_out *out)
+void getSize(SScriptCallBack *p, const char *cmd, getSize_in *in, getSize_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
     out->size = o->octree->size();
 }
 
-void getVolume(SLuaCallBack *p, const char *cmd, getVolume_in *in, getVolume_out *out)
+void getVolume(SScriptCallBack *p, const char *cmd, getVolume_in *in, getVolume_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
     out->volume = o->octree->volume();
 }
 
-void getResolution(SLuaCallBack *p, const char *cmd, getResolution_in *in, getResolution_out *out)
+void getResolution(SScriptCallBack *p, const char *cmd, getResolution_in *in, getResolution_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
     out->res = o->octree->getResolution();
 }
 
-void getTreeDepth(SLuaCallBack *p, const char *cmd, getTreeDepth_in *in, getTreeDepth_out *out)
+void getTreeDepth(SScriptCallBack *p, const char *cmd, getTreeDepth_in *in, getTreeDepth_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
     out->depth = o->octree->getTreeDepth();
 }
 
-void getTreeType(SLuaCallBack *p, const char *cmd, getTreeType_in *in, getTreeType_out *out)
+void getTreeType(SScriptCallBack *p, const char *cmd, getTreeType_in *in, getTreeType_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
     out->treeType = o->octree->getTreeType();
 }
 
-void prune(SLuaCallBack *p, const char *cmd, prune_in *in, prune_out *out)
+void prune(SScriptCallBack *p, const char *cmd, prune_in *in, prune_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -571,7 +531,7 @@ void prune(SLuaCallBack *p, const char *cmd, prune_in *in, prune_out *out)
     out->result = 1;
 }
 
-void updateNode(SLuaCallBack *p, const char *cmd, updateNode_in *in, updateNode_out *out)
+void updateNode(SScriptCallBack *p, const char *cmd, updateNode_in *in, updateNode_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -591,7 +551,7 @@ void updateNode(SLuaCallBack *p, const char *cmd, updateNode_in *in, updateNode_
     }
 }
 
-void updateNodeWithKey(SLuaCallBack *p, const char *cmd, updateNodeWithKey_in *in, updateNodeWithKey_out *out)
+void updateNodeWithKey(SScriptCallBack *p, const char *cmd, updateNodeWithKey_in *in, updateNodeWithKey_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -611,7 +571,7 @@ void updateNodeWithKey(SLuaCallBack *p, const char *cmd, updateNodeWithKey_in *i
     }
 }
 
-void insertPointCloud(SLuaCallBack *p, const char *cmd, insertPointCloud_in *in, insertPointCloud_out *out)
+void insertPointCloud(SScriptCallBack *p, const char *cmd, insertPointCloud_in *in, insertPointCloud_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -640,7 +600,7 @@ void insertPointCloud(SLuaCallBack *p, const char *cmd, insertPointCloud_in *in,
     out->result = 1;
 }
 
-void castRay(SLuaCallBack *p, const char *cmd, castRay_in *in, castRay_out *out)
+void castRay(SScriptCallBack *p, const char *cmd, castRay_in *in, castRay_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -664,7 +624,7 @@ void castRay(SLuaCallBack *p, const char *cmd, castRay_in *in, castRay_out *out)
     out->end = pointToVector(end);
 }
 
-void write(SLuaCallBack *p, const char *cmd, write_in *in, write_out *out)
+void write(SScriptCallBack *p, const char *cmd, write_in *in, write_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -672,7 +632,7 @@ void write(SLuaCallBack *p, const char *cmd, write_in *in, write_out *out)
     out->result = 1;
 }
 
-void writeBinary(SLuaCallBack *p, const char *cmd, writeBinary_in *in, writeBinary_out *out)
+void writeBinary(SScriptCallBack *p, const char *cmd, writeBinary_in *in, writeBinary_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -698,7 +658,7 @@ void valueColor(float value, float& r, float& g, float& b)
     }
 }
 
-void addDrawingObject(SLuaCallBack *p, const char *cmd, addDrawingObject_in *in, addDrawingObject_out *out)
+void addDrawingObject(SScriptCallBack *p, const char *cmd, addDrawingObject_in *in, addDrawingObject_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -763,7 +723,7 @@ void addDrawingObject(SLuaCallBack *p, const char *cmd, addDrawingObject_in *in,
     out->handle = handle;
 }
 
-void isOccupied(SLuaCallBack *p, const char *cmd, isOccupied_in *in, isOccupied_out *out)
+void isOccupied(SScriptCallBack *p, const char *cmd, isOccupied_in *in, isOccupied_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -779,7 +739,7 @@ void isOccupied(SLuaCallBack *p, const char *cmd, isOccupied_in *in, isOccupied_
     }
 }
 
-void isOccupiedKey(SLuaCallBack *p, const char *cmd, isOccupiedKey_in *in, isOccupiedKey_out *out)
+void isOccupiedKey(SScriptCallBack *p, const char *cmd, isOccupiedKey_in *in, isOccupiedKey_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -795,7 +755,7 @@ void isOccupiedKey(SLuaCallBack *p, const char *cmd, isOccupiedKey_in *in, isOcc
     }
 }
 
-void f(SLuaCallBack *p, const char *cmd, f_in *in, f_out *out)
+void f(SScriptCallBack *p, const char *cmd, f_in *in, f_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -820,7 +780,7 @@ void f(SLuaCallBack *p, const char *cmd, f_in *in, f_out *out)
     }
 }
 
-void getRoot(SLuaCallBack *p, const char *cmd, getRoot_in *in, getRoot_out *out)
+void getRoot(SScriptCallBack *p, const char *cmd, getRoot_in *in, getRoot_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -828,7 +788,7 @@ void getRoot(SLuaCallBack *p, const char *cmd, getRoot_in *in, getRoot_out *out)
     out->node = encodePointer(node);
 }
 
-void search(SLuaCallBack *p, const char *cmd, search_in *in, search_out *out)
+void search(SScriptCallBack *p, const char *cmd, search_in *in, search_out *out)
 {
     OctreeProxy *o = getOctreeOrSetError(cmd, in->octreeHandle);
     if(!o) return;
@@ -850,7 +810,7 @@ bool checkChildIndexOrSetError(const char *cmd, int i)
     }
 }
 
-void addValue(SLuaCallBack *p, const char *cmd, addValue_in *in, addValue_out *out)
+void addValue(SScriptCallBack *p, const char *cmd, addValue_in *in, addValue_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
@@ -858,7 +818,7 @@ void addValue(SLuaCallBack *p, const char *cmd, addValue_in *in, addValue_out *o
     out->result = 1;
 }
 
-void deleteChild(SLuaCallBack *p, const char *cmd, deleteChild_in *in, deleteChild_out *out)
+void deleteChild(SScriptCallBack *p, const char *cmd, deleteChild_in *in, deleteChild_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
@@ -867,7 +827,7 @@ void deleteChild(SLuaCallBack *p, const char *cmd, deleteChild_in *in, deleteChi
     out->result = 1;
 }
 
-void expandNode(SLuaCallBack *p, const char *cmd, expandNode_in *in, expandNode_out *out)
+void expandNode(SScriptCallBack *p, const char *cmd, expandNode_in *in, expandNode_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
@@ -875,7 +835,7 @@ void expandNode(SLuaCallBack *p, const char *cmd, expandNode_in *in, expandNode_
     out->result = 1;
 }
 
-void setLogOdds(SLuaCallBack *p, const char *cmd, setLogOdds_in *in, setLogOdds_out *out)
+void setLogOdds(SScriptCallBack *p, const char *cmd, setLogOdds_in *in, setLogOdds_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
@@ -883,7 +843,7 @@ void setLogOdds(SLuaCallBack *p, const char *cmd, setLogOdds_in *in, setLogOdds_
     out->result = 1;
 }
 
-void setValue(SLuaCallBack *p, const char *cmd, setValue_in *in, setValue_out *out)
+void setValue(SScriptCallBack *p, const char *cmd, setValue_in *in, setValue_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
@@ -891,7 +851,7 @@ void setValue(SLuaCallBack *p, const char *cmd, setValue_in *in, setValue_out *o
     out->result = 1;
 }
 
-void updateOccupancyChildren(SLuaCallBack *p, const char *cmd, updateOccupancyChildren_in *in, updateOccupancyChildren_out *out)
+void updateOccupancyChildren(SScriptCallBack *p, const char *cmd, updateOccupancyChildren_in *in, updateOccupancyChildren_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
@@ -899,7 +859,7 @@ void updateOccupancyChildren(SLuaCallBack *p, const char *cmd, updateOccupancyCh
     out->result = 1;
 }
 
-void childExists(SLuaCallBack *p, const char *cmd, childExists_in *in, childExists_out *out)
+void childExists(SScriptCallBack *p, const char *cmd, childExists_in *in, childExists_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
@@ -907,14 +867,14 @@ void childExists(SLuaCallBack *p, const char *cmd, childExists_in *in, childExis
     out->result = node->childExists(in->i);
 }
 
-void collapsible(SLuaCallBack *p, const char *cmd, collapsible_in *in, collapsible_out *out)
+void collapsible(SScriptCallBack *p, const char *cmd, collapsible_in *in, collapsible_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
     out->result = node->collapsible();
 }
 
-void createChild(SLuaCallBack *p, const char *cmd, createChild_in *in, createChild_out *out)
+void createChild(SScriptCallBack *p, const char *cmd, createChild_in *in, createChild_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
@@ -922,49 +882,49 @@ void createChild(SLuaCallBack *p, const char *cmd, createChild_in *in, createChi
     out->result = node->createChild(in->i);
 }
 
-void hasChildren(SLuaCallBack *p, const char *cmd, hasChildren_in *in, hasChildren_out *out)
+void hasChildren(SScriptCallBack *p, const char *cmd, hasChildren_in *in, hasChildren_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
     out->result = node->hasChildren();
 }
 
-void pruneNode(SLuaCallBack *p, const char *cmd, pruneNode_in *in, pruneNode_out *out)
+void pruneNode(SScriptCallBack *p, const char *cmd, pruneNode_in *in, pruneNode_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
     out->result = node->pruneNode();
 }
 
-void getValue(SLuaCallBack *p, const char *cmd, getValue_in *in, getValue_out *out)
+void getValue(SScriptCallBack *p, const char *cmd, getValue_in *in, getValue_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
     out->result = node->getValue();
 }
 
-void getLogOdds(SLuaCallBack *p, const char *cmd, getLogOdds_in *in, getLogOdds_out *out)
+void getLogOdds(SScriptCallBack *p, const char *cmd, getLogOdds_in *in, getLogOdds_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
     out->result = node->getLogOdds();
 }
 
-void getMaxChildLogOdds(SLuaCallBack *p, const char *cmd, getMaxChildLogOdds_in *in, getMaxChildLogOdds_out *out)
+void getMaxChildLogOdds(SScriptCallBack *p, const char *cmd, getMaxChildLogOdds_in *in, getMaxChildLogOdds_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
     out->result = node->getMaxChildLogOdds();
 }
 
-void getMeanChildLogOdds(SLuaCallBack *p, const char *cmd, getMeanChildLogOdds_in *in, getMeanChildLogOdds_out *out)
+void getMeanChildLogOdds(SScriptCallBack *p, const char *cmd, getMeanChildLogOdds_in *in, getMeanChildLogOdds_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
     out->result = node->getMeanChildLogOdds();
 }
 
-void getOccupancy(SLuaCallBack *p, const char *cmd, getOccupancy_in *in, getOccupancy_out *out)
+void getOccupancy(SScriptCallBack *p, const char *cmd, getOccupancy_in *in, getOccupancy_out *out)
 {
     octomap::OcTreeNode *node = decodePointerOrSetError(cmd, in->node);
     if(!node) return;
@@ -1016,7 +976,12 @@ VREP_DLLEXPORT unsigned char v_repStart(void* reservedPointer, int reservedInt)
         return(0);
     }
 
-    registerLuaStuff();
+    if(!registerScriptStuff())
+    {
+        std::cout << "Initialization failed.\n";
+        unloadVrepLibrary(vrepLib);
+        return(0);
+    }
 
     return(PLUGIN_VERSION); // initialization went fine, we return the version number of this plugin (can be queried with simGetModuleName)
 }
