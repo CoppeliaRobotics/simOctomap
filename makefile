@@ -50,7 +50,7 @@ libv_repExtOctomap.$(EXT): v_repExtOctomap.o stubs.o $(PARENT_DIR)/common/v_repL
 clean:
 	rm -f libv_repExtOctomap.$(EXT)
 	rm -f *.o
-	rm -f stubs.cpp stubs.cpp.tmp stubs.h stubs.h.tmp
+	rm -f stubs.cpp stubs.h
 	rm -f reference.html
 
 install: all
