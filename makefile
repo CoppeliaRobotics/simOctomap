@@ -32,16 +32,16 @@ all: libv_repExtOctomap.$(EXT) doc
 doc: reference.html
 
 reference.html: callbacks.xml callbacks.xsl
-	saxon -s:callbacks.xml -a:on -o:$@
+	saxon -s:$< -a:on -o:$@
 
 v_repExtOctomap.o: stubs.h
 
 stubs.o: stubs.h stubs.cpp
 
-stubs.h: callbacks.xml generate_stubs.py
+stubs.h: callbacks.xml
 	python -m v_repStubsGen -H $@ $<
 
-stubs.cpp: callbacks.xml generate_stubs.py
+stubs.cpp: callbacks.xml
 	python -m v_repStubsGen -C $@ $<
 
 libv_repExtOctomap.$(EXT): v_repExtOctomap.o stubs.o $(PARENT_DIR)/common/v_repLib.o
