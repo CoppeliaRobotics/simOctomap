@@ -28,7 +28,6 @@
 // -------------------------------------------------------------------
 
 #include "v_repExtOctomap.h"
-#include "luaFunctionData.h"
 #include "v_repLib.h"
 #include <iostream>
 #include <fstream>
