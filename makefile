@@ -11,7 +11,7 @@ OCTOMAP_LDLIBS = -L$(OCTOMAP_DIR)/lib -loctomath -loctomap
 # for when $PWD is a symlink:
 PARENT_DIR = $(shell sh -c 'cd $$PWD/..; pwd')
 
-CXXFLAGS = -ggdb -O0 -I$(PARENT_DIR)/include -Wall -Wno-unused -Wno-overloaded-virtual -Wno-sign-compare -fPIC $(BOOST_CFLAGS) $(OCTOMAP_CFLAGS)
+CXXFLAGS = -ggdb -O0 -I$(PARENT_DIR)/include -Igenerated -Wall -Wno-unused -Wno-overloaded-virtual -Wno-sign-compare -fPIC $(BOOST_CFLAGS) $(OCTOMAP_CFLAGS)
 LDLIBS = -ggdb -O0 -lpthread -ldl $(BOOST_LDLIBS) $(OCTOMAP_LDLIBS)
 
 .PHONY: clean all install doc
@@ -27,31 +27,22 @@ else
 	INSTALL_DIR ?= $(PARENT_DIR)/../vrep.app/Contents/MacOS/
 endif
 
-all: libv_repExtOctomap.$(EXT) doc
+all: libv_repExtOctomap.$(EXT)
 
-doc: reference.html
+v_repExtOctomap.o: generated/stubs.h
 
-reference.html: external/v_repStubsGen/xsl/reference.xsl callbacks.xml
-	xsltproc --path "$(PWD)" -o $@ $^
+generated/stubs.o: generated/stubs.h generated/stubs.cpp
 
-v_repExtOctomap.o: stubs.h
+generated/stubs.h generated/stubs.cpp generated/reference.html: callbacks.xml
+	python external/v_repStubsGen/generate.py --xml-file callbacks.xml --gen-all "$(PWD)/generated/"
 
-stubs.o: stubs.h stubs.cpp
-
-stubs.h: callbacks.xml
-	python external/v_repStubsGen/main.py -H $@ $<
-
-stubs.cpp: callbacks.xml
-	python external/v_repStubsGen/main.py -C $@ $<
-
-libv_repExtOctomap.$(EXT): v_repExtOctomap.o stubs.o $(PARENT_DIR)/common/v_repLib.o
+libv_repExtOctomap.$(EXT): v_repExtOctomap.o generated/stubs.o $(PARENT_DIR)/common/v_repLib.o
 	$(CXX) $^ $(LDLIBS) -shared -o $@
 
 clean:
 	rm -f libv_repExtOctomap.$(EXT)
 	rm -f *.o
-	rm -f stubs.cpp stubs.h
-	rm -f reference.html
+	rm -rf generated
 
 install: all
 	cp libv_repExtOctomap.$(EXT) $(INSTALL_DIR)
