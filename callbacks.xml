@@ -945,6 +945,8 @@
         </item>
         <item name="value">
         </item>
+        <item name="color">
+        </item>
     </enum>
     <script-function name="goalCallback">
         <description>Callback for checking if the goal is satisfied.</description>
