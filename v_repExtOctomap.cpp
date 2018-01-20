@@ -653,23 +653,44 @@ void f(SScriptCallBack *p, const char *cmd, f_in *in, f_out *out)
     octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
+    octree->expand();
 
-    octomap::OcTree *r = new octomap::OcTree(octree->getResolution());
-    out->octreeHandle = Handle<octomap::OcTree>::str(r);
+    octomap::OcTree *gnd = new octomap::OcTree(octree->getResolution());
+    out->gndOctreeHandle = Handle<octomap::OcTree>::str(gnd);
 
-    octomap::OcTree::leaf_iterator begin = octree->begin(), end = octree->end();
+    octomap::point3d rxyz(in->s, in->s, in->h), rxy(in->s, in->s, 0), rz(0, 0, in->h), rz0(0, 0, octree->getResolution());
+
+    octomap::OcTree::leaf_iterator begin = octree->begin_leafs(),
+        end = octree->end_leafs();
     for(octomap::OcTree::leaf_iterator it = begin; it != end; ++it)
     {
         if(!octree->isNodeOccupied(*it)) continue;
+        octomap::point3d c = it.getCoordinate();
+        bool ok = true;
 
-        octomap::OcTreeKey key = it.getKey();
-        key[2]++;
-        octomap::OcTreeNode *node = octree->search(key);
-        if(node && !octree->isNodeOccupied(node))
+        // this check is redundant but make it faster
+        octomap::OcTree::leaf_bbx_iterator begin1 = octree->begin_leafs_bbx(c + rz0, c + rz),
+            end1 = octree->end_leafs_bbx();
+        for(octomap::OcTree::leaf_bbx_iterator it1 = begin1; it1 != end1; ++it1)
         {
-            r->updateNode(key, true);
+            if(octree->isNodeOccupied(*it1)) {ok=false; break;}
         }
+        if(!ok) continue;
+
+        // this is the actual check
+        octomap::OcTree::leaf_bbx_iterator begin2 = octree->begin_leafs_bbx(c - rxy, c + rxyz),
+            end2 = octree->end_leafs_bbx();
+        for(octomap::OcTree::leaf_bbx_iterator it2 = begin2; it2 != end2; ++it2)
+        {
+            octomap::point3d q = it2.getCoordinate() - c;
+            if(q.z() <= 0.5*octree->getResolution()) continue;
+            if(sqrt(q.x()*q.x()+q.y()*q.y()) < in->s*q.z()/in->h && octree->isNodeOccupied(*it2)) {ok = false; break;}
+        }
+        if(!ok) continue;
+
+        gnd->updateNode(c, true);
     }
+    octree->prune();
 }
 
 void getRoot(SScriptCallBack *p, const char *cmd, getRoot_in *in, getRoot_out *out)

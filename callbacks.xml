@@ -867,9 +867,15 @@
             <param name="octreeHandle" type="string">
                 <description>handle to OcTree</description>
             </param>
+            <param name="h" type="float">
+                <description>height</description>
+            </param>
+            <param name="s" type="float">
+                <description>side</description>
+            </param>
         </params>
         <return>
-            <param name="octreeHandle" type="string">
+            <param name="gndOctreeHandle" type="string">
                 <description>a handle to the created OcTree</description>
             </param>
         </return>
