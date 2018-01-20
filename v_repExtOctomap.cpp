@@ -765,6 +765,17 @@ void setValue(SScriptCallBack *p, const char *cmd, setValue_in *in, setValue_out
     node->setValue(in->v);
 }
 
+void setColor(SScriptCallBack *p, const char *cmd, setColor_in *in, setColor_out *out)
+{
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
+    if(!node)
+        throw std::string("invalid OcTreeNode handle");
+    if(in->r < 0 || in->r > 255 || in->g < 0 || in->g > 255 || in->b < 0 || in->b > 255)
+        throw std::string("color component must be in 0..255 range");
+    OcTreeNode::Color c(in->r, in->g, in->b);
+    node->setColor(c);
+}
+
 void updateOccupancyChildren(SScriptCallBack *p, const char *cmd, updateOccupancyChildren_in *in, updateOccupancyChildren_out *out)
 {
     OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
@@ -832,6 +843,17 @@ void getValue(SScriptCallBack *p, const char *cmd, getValue_in *in, getValue_out
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     out->value = node->getValue();
+}
+
+void getColor(SScriptCallBack *p, const char *cmd, getColor_in *in, getColor_out *out)
+{
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
+    if(!node)
+        throw std::string("invalid OcTreeNode handle");
+    OcTreeNode::Color c = node->getColor();
+    out->r = c.r;
+    out->g = c.g;
+    out->b = c.b;
 }
 
 void getLogOdds(SScriptCallBack *p, const char *cmd, getLogOdds_in *in, getLogOdds_out *out)

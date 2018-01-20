@@ -657,6 +657,30 @@
         <return>
         </return>
     </command>
+    <command name="setColor">
+        <description>sets color to be stored in the node</description>
+        <see-also>
+            <command name="search" />
+            <command name="getColor" />
+            <command name="setValue" />
+        </see-also>
+        <params>
+            <param name="nodeHandle" type="string">
+                <description>node handle</description>
+            </param>
+            <param name="r" type="int">
+                <description>red component (0..255)</description>
+            </param>
+            <param name="g" type="int">
+                <description>green component (0..255)</description>
+            </param>
+            <param name="b" type="int">
+                <description>blue component (0..255)</description>
+            </param>
+        </params>
+        <return>
+        </return>
+    </command>
     <command name="updateOccupancyChildren">
         <description>update this node's occupancy according to its children's maximum occupancy</description>
         <see-also>
@@ -786,6 +810,30 @@
         <return>
             <param name="value" type="float" default="0.0">
                 <description></description>
+            </param>
+        </return>
+    </command>
+    <command name="getColor">
+        <description>Get the color of node</description>
+        <see-also>
+            <command name="search" />
+            <command name="getValue" />
+            <command name="setColor" />
+        </see-also>
+        <params>
+            <param name="nodeHandle" type="string">
+                <description>node handle</description>
+            </param>
+        </params>
+        <return>
+            <param name="r" type="int">
+                <description>red component (0..255)</description>
+            </param>
+            <param name="g" type="int">
+                <description>green component (0..255)</description>
+            </param>
+            <param name="b" type="int">
+                <description>blue component (0..255)</description>
             </param>
         </return>
     </command>
