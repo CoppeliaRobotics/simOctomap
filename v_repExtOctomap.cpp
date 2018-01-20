@@ -31,6 +31,7 @@
 LIBRARY vrepLib; // the V-REP library that we will dynamically load and bind
 
 #include <octomap/octomap.h>
+#include <octomap/ColorOcTree.h>
 #include <octomap/math/Utils.h>
 
 #include "stubs.h"
@@ -79,13 +80,17 @@ private:
     }
 };
 
-template<> std::string Handle<octomap::OcTree>::tag() { return "octomap.OcTree"; }
-template<> std::string Handle<octomap::OcTreeNode>::tag() { return "octomap.OcTreeNode"; }
+using OcTree = octomap::ColorOcTree;
+using OcTreeKey = octomap::OcTreeKey;
+using OcTreeNode = octomap::ColorOcTreeNode;
+
+template<> std::string Handle<OcTree>::tag() { return "octomap.OcTree"; }
+template<> std::string Handle<OcTreeNode>::tag() { return "octomap.OcTreeNode"; }
 
 void create(SScriptCallBack *p, const char *cmd, create_in *in, create_out *out)
 {
-	octomap::OcTree *octree = new octomap::OcTree(in->resolution);
-    out->octreeHandle = Handle<octomap::OcTree>::str(octree);
+    OcTree *octree = new OcTree(in->resolution);
+    out->octreeHandle = Handle<OcTree>::str(octree);
 }
 
 simInt createProximitySensor(float size)
@@ -131,14 +136,14 @@ simInt createProximitySensor(float size)
     return simCreateProximitySensor(sim_proximitysensor_pyramid_subtype, sim_objectspecialproperty_detectable_all, options, intParams, floatParams, NULL);
 }
 
-octomap::point3d snapCoord(octomap::OcTree *octree, int depth, octomap::point3d coord)
+octomap::point3d snapCoord(OcTree *octree, int depth, octomap::point3d coord)
 {
-    octomap::OcTreeKey key = octree->coordToKey(coord, depth);
+    OcTreeKey key = octree->coordToKey(coord, depth);
     octomap::point3d coord1 = octree->keyToCoord(key, depth);
     return coord1;
 }
 
-void measureOccupancy(octomap::OcTree *octree, int depth, octomap::point3d coord, const octomap::point3d& boundsMin, const octomap::point3d& boundsMax, std::map<int,simInt>& proximitySensors)
+void measureOccupancy(OcTree *octree, int depth, octomap::point3d coord, const octomap::point3d& boundsMin, const octomap::point3d& boundsMax, std::map<int,simInt>& proximitySensors)
 {
     double nodeSize = octree->getNodeSize(depth);
 
@@ -218,7 +223,7 @@ void createFromScene(SScriptCallBack *p, const char *cmd, createFromScene_in *in
         if(in->boundsMin[i] >= in->boundsMax[i])
             throw std::string("bounds min must be strictly lower than max");
 
-    octomap::OcTree *octree = new octomap::OcTree(in->resolution);
+    OcTree *octree = new OcTree(in->resolution);
 
 #ifndef DISABLE_FAST_OCCUPANCY_MEASUREMENT
     // snap bounds to voxel coords at minimum depth:
@@ -270,12 +275,12 @@ void createFromScene(SScriptCallBack *p, const char *cmd, createFromScene_in *in
     simRemoveObject(sens);
 #endif
 
-    out->octreeHandle = Handle<octomap::OcTree>::str(octree);
+    out->octreeHandle = Handle<OcTree>::str(octree);
 }
 
 void destroy(SScriptCallBack *p, const char *cmd, destroy_in *in, destroy_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     delete octree;
@@ -286,9 +291,9 @@ octomap::point3d vectorToPoint(std::vector<float> v)
     return octomap::point3d(v[0], v[1], v[2]);
 }
 
-octomap::OcTreeKey vectorToKey(std::vector<int> v)
+OcTreeKey vectorToKey(std::vector<int> v)
 {
-    octomap::OcTreeKey key;
+    OcTreeKey key;
     key[0] = v[0];
     key[1] = v[1];
     key[2] = v[2];
@@ -304,7 +309,7 @@ std::vector<float> pointToVector(octomap::point3d p)
     return v;
 }
 
-std::vector<int> keyToVector(octomap::OcTreeKey k)
+std::vector<int> keyToVector(OcTreeKey k)
 {
     std::vector<int> v;
     v.push_back(k[0]);
@@ -315,7 +320,7 @@ std::vector<int> keyToVector(octomap::OcTreeKey k)
 
 void clear(SScriptCallBack *p, const char *cmd, clear_in *in, clear_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     octree->clear();
@@ -323,27 +328,27 @@ void clear(SScriptCallBack *p, const char *cmd, clear_in *in, clear_out *out)
 
 void coordToKey(SScriptCallBack *p, const char *cmd, coordToKey_in *in, coordToKey_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     octomap::point3d coord = vectorToPoint(in->coord);
-    octomap::OcTreeKey key = octree->coordToKey(coord);
+    OcTreeKey key = octree->coordToKey(coord);
     out->key = keyToVector(key);
 }
 
 void keyToCoord(SScriptCallBack *p, const char *cmd, keyToCoord_in *in, keyToCoord_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
-    octomap::OcTreeKey key = vectorToKey(in->key);
+    OcTreeKey key = vectorToKey(in->key);
     octomap::point3d coord = octree->keyToCoord(key);
     out->coord = pointToVector(coord);
 }
 
 void deleteNode(SScriptCallBack *p, const char *cmd, deleteNode_in *in, deleteNode_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     octomap::point3d coord = vectorToPoint(in->coord);
@@ -352,16 +357,16 @@ void deleteNode(SScriptCallBack *p, const char *cmd, deleteNode_in *in, deleteNo
 
 void deleteNodeWithKey(SScriptCallBack *p, const char *cmd, deleteNodeWithKey_in *in, deleteNodeWithKey_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
-    octomap::OcTreeKey key = vectorToKey(in->key);
+    OcTreeKey key = vectorToKey(in->key);
     octree->deleteNode(key, in->depth);
 }
 
 void getMetricBounds(SScriptCallBack *p, const char *cmd, getMetricBounds_in *in, getMetricBounds_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     double minx, miny, minz, maxx, maxy, maxz, sizex, sizey, sizez;
@@ -375,7 +380,7 @@ void getMetricBounds(SScriptCallBack *p, const char *cmd, getMetricBounds_in *in
 
 void getNodeSize(SScriptCallBack *p, const char *cmd, getNodeSize_in *in, getNodeSize_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     out->size = octree->getNodeSize(in->depth);
@@ -383,7 +388,7 @@ void getNodeSize(SScriptCallBack *p, const char *cmd, getNodeSize_in *in, getNod
 
 void getNumLeafNodes(SScriptCallBack *p, const char *cmd, getNumLeafNodes_in *in, getNumLeafNodes_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     out->n = octree->getNumLeafNodes();
@@ -391,7 +396,7 @@ void getNumLeafNodes(SScriptCallBack *p, const char *cmd, getNumLeafNodes_in *in
 
 void getSize(SScriptCallBack *p, const char *cmd, getSize_in *in, getSize_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     out->size = octree->size();
@@ -399,7 +404,7 @@ void getSize(SScriptCallBack *p, const char *cmd, getSize_in *in, getSize_out *o
 
 void getVolume(SScriptCallBack *p, const char *cmd, getVolume_in *in, getVolume_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     out->volume = octree->volume();
@@ -407,7 +412,7 @@ void getVolume(SScriptCallBack *p, const char *cmd, getVolume_in *in, getVolume_
 
 void getResolution(SScriptCallBack *p, const char *cmd, getResolution_in *in, getResolution_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     out->res = octree->getResolution();
@@ -415,7 +420,7 @@ void getResolution(SScriptCallBack *p, const char *cmd, getResolution_in *in, ge
 
 void getTreeDepth(SScriptCallBack *p, const char *cmd, getTreeDepth_in *in, getTreeDepth_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     out->depth = octree->getTreeDepth();
@@ -423,7 +428,7 @@ void getTreeDepth(SScriptCallBack *p, const char *cmd, getTreeDepth_in *in, getT
 
 void getTreeType(SScriptCallBack *p, const char *cmd, getTreeType_in *in, getTreeType_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     out->treeType = octree->getTreeType();
@@ -431,7 +436,7 @@ void getTreeType(SScriptCallBack *p, const char *cmd, getTreeType_in *in, getTre
 
 void prune(SScriptCallBack *p, const char *cmd, prune_in *in, prune_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     octree->prune();
@@ -439,7 +444,7 @@ void prune(SScriptCallBack *p, const char *cmd, prune_in *in, prune_out *out)
 
 void updateNode(SScriptCallBack *p, const char *cmd, updateNode_in *in, updateNode_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     octomap::point3d coord = vectorToPoint(in->coord);
@@ -458,10 +463,10 @@ void updateNode(SScriptCallBack *p, const char *cmd, updateNode_in *in, updateNo
 
 void updateNodeWithKey(SScriptCallBack *p, const char *cmd, updateNodeWithKey_in *in, updateNodeWithKey_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
-    octomap::OcTreeKey key = vectorToKey(in->key);
+    OcTreeKey key = vectorToKey(in->key);
     switch(in->mode)
     {
     case sim_octomap_update_log_odds:
@@ -477,7 +482,7 @@ void updateNodeWithKey(SScriptCallBack *p, const char *cmd, updateNodeWithKey_in
 
 void insertPointCloud(SScriptCallBack *p, const char *cmd, insertPointCloud_in *in, insertPointCloud_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
 
@@ -500,7 +505,7 @@ void insertPointCloud(SScriptCallBack *p, const char *cmd, insertPointCloud_in *
 
 void castRay(SScriptCallBack *p, const char *cmd, castRay_in *in, castRay_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
 
@@ -519,7 +524,7 @@ void castRay(SScriptCallBack *p, const char *cmd, castRay_in *in, castRay_out *o
 
 void write(SScriptCallBack *p, const char *cmd, write_in *in, write_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     octree->write(in->filename);
@@ -527,7 +532,7 @@ void write(SScriptCallBack *p, const char *cmd, write_in *in, write_out *out)
 
 void writeBinary(SScriptCallBack *p, const char *cmd, writeBinary_in *in, writeBinary_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     octree->writeBinary(in->filename);
@@ -553,7 +558,7 @@ void valueColor(float value, float& r, float& g, float& b)
 
 void addDrawingObject(SScriptCallBack *p, const char *cmd, addDrawingObject_in *in, addDrawingObject_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
 
@@ -567,8 +572,8 @@ void addDrawingObject(SScriptCallBack *p, const char *cmd, addDrawingObject_in *
     simInt handle = simAddDrawingObject(sim_drawing_cubepoints + sim_drawing_itemcolors + sim_drawing_itemsizes, 0, 0.0, -1, 1000000, NULL, NULL, NULL, NULL);
     simFloat data[10];
 
-    octomap::OcTree::leaf_iterator begin = octree->begin(in->depth), end = octree->end();
-    for(octomap::OcTree::leaf_iterator it = begin; it != end; ++it)
+    OcTree::leaf_iterator begin = octree->begin(in->depth), end = octree->end();
+    for(OcTree::leaf_iterator it = begin; it != end; ++it)
     {
         if(!octree->isNodeOccupied(*it) && in->skipFree) continue;
         // cube position:
@@ -616,11 +621,11 @@ void addDrawingObject(SScriptCallBack *p, const char *cmd, addDrawingObject_in *
 
 void isOccupied(SScriptCallBack *p, const char *cmd, isOccupied_in *in, isOccupied_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     octomap::point3d coord = vectorToPoint(in->coord);
-    octomap::OcTreeNode *node = octree->search(coord, in->depth);
+    OcTreeNode *node = octree->search(coord, in->depth);
     if(!node)
     {
         out->occupancy = -1;
@@ -633,11 +638,11 @@ void isOccupied(SScriptCallBack *p, const char *cmd, isOccupied_in *in, isOccupi
 
 void isOccupiedKey(SScriptCallBack *p, const char *cmd, isOccupiedKey_in *in, isOccupiedKey_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
-    octomap::OcTreeKey key = vectorToKey(in->key);
-    octomap::OcTreeNode *node = octree->search(key, in->depth);
+    OcTreeKey key = vectorToKey(in->key);
+    OcTreeNode *node = octree->search(key, in->depth);
     if(!node)
     {
         out->occupancy = -1;
@@ -650,37 +655,37 @@ void isOccupiedKey(SScriptCallBack *p, const char *cmd, isOccupiedKey_in *in, is
 
 void f(SScriptCallBack *p, const char *cmd, f_in *in, f_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     octree->expand();
 
-    octomap::OcTree *gnd = new octomap::OcTree(octree->getResolution());
-    out->gndOctreeHandle = Handle<octomap::OcTree>::str(gnd);
+    OcTree *gnd = new OcTree(octree->getResolution());
+    out->gndOctreeHandle = Handle<OcTree>::str(gnd);
 
     octomap::point3d rxyz(in->s, in->s, in->h), rxy(in->s, in->s, 0), rz(0, 0, in->h), rz0(0, 0, octree->getResolution());
 
-    octomap::OcTree::leaf_iterator begin = octree->begin_leafs(),
+    OcTree::leaf_iterator begin = octree->begin_leafs(),
         end = octree->end_leafs();
-    for(octomap::OcTree::leaf_iterator it = begin; it != end; ++it)
+    for(OcTree::leaf_iterator it = begin; it != end; ++it)
     {
         if(!octree->isNodeOccupied(*it)) continue;
         octomap::point3d c = it.getCoordinate();
         bool ok = true;
 
         // this check is redundant but make it faster
-        octomap::OcTree::leaf_bbx_iterator begin1 = octree->begin_leafs_bbx(c + rz0, c + rz),
+        OcTree::leaf_bbx_iterator begin1 = octree->begin_leafs_bbx(c + rz0, c + rz),
             end1 = octree->end_leafs_bbx();
-        for(octomap::OcTree::leaf_bbx_iterator it1 = begin1; it1 != end1; ++it1)
+        for(OcTree::leaf_bbx_iterator it1 = begin1; it1 != end1; ++it1)
         {
             if(octree->isNodeOccupied(*it1)) {ok=false; break;}
         }
         if(!ok) continue;
 
         // this is the actual check
-        octomap::OcTree::leaf_bbx_iterator begin2 = octree->begin_leafs_bbx(c - rxy, c + rxyz),
+        OcTree::leaf_bbx_iterator begin2 = octree->begin_leafs_bbx(c - rxy, c + rxyz),
             end2 = octree->end_leafs_bbx();
-        for(octomap::OcTree::leaf_bbx_iterator it2 = begin2; it2 != end2; ++it2)
+        for(OcTree::leaf_bbx_iterator it2 = begin2; it2 != end2; ++it2)
         {
             octomap::point3d q = it2.getCoordinate() - c;
             if(q.z() <= 0.5*octree->getResolution()) continue;
@@ -695,26 +700,26 @@ void f(SScriptCallBack *p, const char *cmd, f_in *in, f_out *out)
 
 void getRoot(SScriptCallBack *p, const char *cmd, getRoot_in *in, getRoot_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
-    octomap::OcTreeNode *node = octree->getRoot();
-    out->nodeHandle = Handle<octomap::OcTreeNode>::str(node);
+    OcTreeNode *node = octree->getRoot();
+    out->nodeHandle = Handle<OcTreeNode>::str(node);
 }
 
 void search(SScriptCallBack *p, const char *cmd, search_in *in, search_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
     octomap::point3d coord = vectorToPoint(in->coord);
-    octomap::OcTreeNode *node = octree->search(coord, in->depth);
-    out->nodeHandle = Handle<octomap::OcTreeNode>::str(node);
+    OcTreeNode *node = octree->search(coord, in->depth);
+    out->nodeHandle = Handle<OcTreeNode>::str(node);
 }
 
 void addValue(SScriptCallBack *p, const char *cmd, addValue_in *in, addValue_out *out)
 {
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     node->addValue(in->v);
@@ -722,10 +727,10 @@ void addValue(SScriptCallBack *p, const char *cmd, addValue_in *in, addValue_out
 
 void deleteChild(SScriptCallBack *p, const char *cmd, deleteChild_in *in, deleteChild_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     if(in->i < 0 || in->i >= 8)
@@ -735,10 +740,10 @@ void deleteChild(SScriptCallBack *p, const char *cmd, deleteChild_in *in, delete
 
 void expandNode(SScriptCallBack *p, const char *cmd, expandNode_in *in, expandNode_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     octree->expandNode(node);
@@ -746,7 +751,7 @@ void expandNode(SScriptCallBack *p, const char *cmd, expandNode_in *in, expandNo
 
 void setLogOdds(SScriptCallBack *p, const char *cmd, setLogOdds_in *in, setLogOdds_out *out)
 {
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     node->setLogOdds(in->v);
@@ -754,7 +759,7 @@ void setLogOdds(SScriptCallBack *p, const char *cmd, setLogOdds_in *in, setLogOd
 
 void setValue(SScriptCallBack *p, const char *cmd, setValue_in *in, setValue_out *out)
 {
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     node->setValue(in->v);
@@ -762,7 +767,7 @@ void setValue(SScriptCallBack *p, const char *cmd, setValue_in *in, setValue_out
 
 void updateOccupancyChildren(SScriptCallBack *p, const char *cmd, updateOccupancyChildren_in *in, updateOccupancyChildren_out *out)
 {
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     node->updateOccupancyChildren();
@@ -770,7 +775,7 @@ void updateOccupancyChildren(SScriptCallBack *p, const char *cmd, updateOccupanc
 
 void childExists(SScriptCallBack *p, const char *cmd, childExists_in *in, childExists_out *out)
 {
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     if(in->i < 0 || in->i >= 8)
@@ -780,10 +785,10 @@ void childExists(SScriptCallBack *p, const char *cmd, childExists_in *in, childE
 
 void collapsible(SScriptCallBack *p, const char *cmd, collapsible_in *in, collapsible_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     out->collapsible = octree->isNodeCollapsible(node);
@@ -791,10 +796,10 @@ void collapsible(SScriptCallBack *p, const char *cmd, collapsible_in *in, collap
 
 void createChild(SScriptCallBack *p, const char *cmd, createChild_in *in, createChild_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     if(in->i < 0 || in->i >= 8)
@@ -804,7 +809,7 @@ void createChild(SScriptCallBack *p, const char *cmd, createChild_in *in, create
 
 void hasChildren(SScriptCallBack *p, const char *cmd, hasChildren_in *in, hasChildren_out *out)
 {
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     out->hasChildren = node->hasChildren();
@@ -812,10 +817,10 @@ void hasChildren(SScriptCallBack *p, const char *cmd, hasChildren_in *in, hasChi
 
 void pruneNode(SScriptCallBack *p, const char *cmd, pruneNode_in *in, pruneNode_out *out)
 {
-    octomap::OcTree *octree = Handle<octomap::OcTree>::obj(in->octreeHandle);
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
     if(!octree)
         throw std::string("invalid OcTree handle");
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     octree->pruneNode(node);
@@ -823,7 +828,7 @@ void pruneNode(SScriptCallBack *p, const char *cmd, pruneNode_in *in, pruneNode_
 
 void getValue(SScriptCallBack *p, const char *cmd, getValue_in *in, getValue_out *out)
 {
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     out->value = node->getValue();
@@ -831,7 +836,7 @@ void getValue(SScriptCallBack *p, const char *cmd, getValue_in *in, getValue_out
 
 void getLogOdds(SScriptCallBack *p, const char *cmd, getLogOdds_in *in, getLogOdds_out *out)
 {
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     out->value = node->getLogOdds();
@@ -839,7 +844,7 @@ void getLogOdds(SScriptCallBack *p, const char *cmd, getLogOdds_in *in, getLogOd
 
 void getMaxChildLogOdds(SScriptCallBack *p, const char *cmd, getMaxChildLogOdds_in *in, getMaxChildLogOdds_out *out)
 {
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     out->value = node->getMaxChildLogOdds();
@@ -847,7 +852,7 @@ void getMaxChildLogOdds(SScriptCallBack *p, const char *cmd, getMaxChildLogOdds_
 
 void getMeanChildLogOdds(SScriptCallBack *p, const char *cmd, getMeanChildLogOdds_in *in, getMeanChildLogOdds_out *out)
 {
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     out->value = node->getMeanChildLogOdds();
@@ -855,7 +860,7 @@ void getMeanChildLogOdds(SScriptCallBack *p, const char *cmd, getMeanChildLogOdd
 
 void getOccupancy(SScriptCallBack *p, const char *cmd, getOccupancy_in *in, getOccupancy_out *out)
 {
-    octomap::OcTreeNode *node = Handle<octomap::OcTreeNode>::obj(in->nodeHandle);
+    OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
     if(!node)
         throw std::string("invalid OcTreeNode handle");
     out->occupancy = node->getOccupancy();
