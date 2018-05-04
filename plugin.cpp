@@ -3,10 +3,19 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <utility>
+#include <algorithm>
 
 #include <boost/format.hpp>
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+
+#include <boost/config.hpp>
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/property_map/property_map.hpp>
+#include <boost/graph/graph_utility.hpp>
 
 #include "v_repPlusPlus/Plugin.h"
 #include "plugin.h"
@@ -518,22 +527,30 @@ void writeBinary(SScriptCallBack *p, const char *cmd, writeBinary_in *in, writeB
     octree->writeBinary(in->filename);
 }
 
-void valueColor(float value, float& r, float& g, float& b)
+void valueColor(float v, float vmin, float vmax, float &r, float &g, float &b)
 {
-    if(value < 0.0) value = 0.0;
-    if(value > 1.0) value = 1.0;
-    value = 1.0 - value;
-    int fi = int(value * 6.) % 6;
-    float ff = value * 6. - fi;
-    if(ff < 0.0) ff += 1.0;
-    switch(fi) {
-    case 0: r = 1.0;      g = ff;       b = 0.0;      break;
-    case 1: r = 1.0 - ff; g = 1.0;      b = 0.0;      break;
-    case 2: r = 0.0;      g = 1.0;      b = ff;       break;
-    case 3: r = 0.0;      g = 1.0 - ff; b = 1.0;      break;
-    case 4: r = ff;       g = 0.0;      b = 1.0;      break;
-    case 5: r = 1.0;      g = 0.0;      b = 1.0 - ff; break;
+    r = g = b = 1.0;
+    if(v < vmin) v = vmin;
+    if(v > vmax) v = vmax;
+    float dv = vmax - vmin;
+    if(v < (vmin + 0.25 * dv)) {
+        r = 0;
+        g = 4 * (v - vmin) / dv;
+    } else if(v < (vmin + 0.5 * dv)) {
+        r = 0;
+        b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
+    } else if(v < (vmin + 0.75 * dv)) {
+        r = 4 * (v - vmin - 0.5 * dv) / dv;
+        b = 0;
+    } else {
+        g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
+        b = 0;
     }
+}
+
+void valueColor(float value, float &r, float &g, float &b)
+{
+    valueColor(value, 0.0, 1.0, r, g, b);
 }
 
 void addDrawingObject(SScriptCallBack *p, const char *cmd, addDrawingObject_in *in, addDrawingObject_out *out)
@@ -633,6 +650,85 @@ void isOccupiedKey(SScriptCallBack *p, const char *cmd, isOccupiedKey_in *in, is
     }
 }
 
+double localZMoment(OcTree *octree, octomap::point3d p, octomap::point3d radius = octomap::point3d(2, 2, 4), int order = 1, double mean = 0.0)
+{
+    double sum = 0;
+    int count = 0;
+    double res = octree->getResolution();
+    OcTree::leaf_bbx_iterator begin1 = octree->begin_leafs_bbx(p - radius * res, p + radius * res),
+        end1 = octree->end_leafs_bbx();
+    for(OcTree::leaf_bbx_iterator it1 = begin1; it1 != end1; ++it1)
+    {
+        sum += pow(it1.getCoordinate().z() - mean, order);
+        count++;
+    }
+    return sum / count;
+}
+
+double borderPenalty(OcTree *octree, octomap::point3d p, octomap::point3d radius = octomap::point3d(1, 1, 3))
+{
+    int count = 0;
+    double res = octree->getResolution();
+    OcTree::leaf_bbx_iterator begin1 = octree->begin_leafs_bbx(p - radius * res, p + radius * res),
+        end1 = octree->end_leafs_bbx();
+    for(OcTree::leaf_bbx_iterator it1 = begin1; it1 != end1; ++it1)
+    {
+        count++;
+    }
+    return pow(9 - count, 2);
+}
+
+void computeCostmap(OcTree *octree, octomap::point3d radius = octomap::point3d(2, 2, 4))
+{
+    OcTree::leaf_iterator begin = octree->begin_leafs(),
+        end = octree->end_leafs();
+    double v, vmin, vmax;
+    bool first = true;
+    for(OcTree::leaf_iterator it = begin; it != end; ++it)
+    {
+        octomap::point3d c = it.getCoordinate();
+        double mean = localZMoment(octree, c, radius, 1, 0.0);
+        double var = localZMoment(octree, c, radius, 2, mean);
+        double bp = borderPenalty(octree, c);
+        v = var + 0.5 * bp;
+        vmin = first ? v : fmin(v, vmin);
+        vmax = first ? v : fmax(v, vmax);
+        first = false;
+        it->setValue(v);
+    }
+    for(OcTree::leaf_iterator it = begin; it != end; ++it)
+    {
+        it->setValue(1 * (it->getValue() - vmin + 0.01) / (vmax - vmin + 0.01));
+    }
+}
+
+double costAverage(OcTree *octree, octomap::point3d p, octomap::point3d radius)
+{
+    double sum = 0;
+    int count = 0;
+    double res = octree->getResolution();
+    OcTree::leaf_bbx_iterator begin1 = octree->begin_leafs_bbx(p - radius * res, p + radius * res),
+        end1 = octree->end_leafs_bbx();
+    for(OcTree::leaf_bbx_iterator it1 = begin1; it1 != end1; ++it1)
+    {
+        sum += it1->getValue();
+        count++;
+    }
+    return sum / count;
+}
+
+void smoothCostmap(OcTree *octree, octomap::point3d radius = octomap::point3d(1, 1, 3))
+{
+    OcTree::leaf_iterator begin = octree->begin_leafs(),
+        end = octree->end_leafs();
+    for(OcTree::leaf_iterator it = begin; it != end; ++it)
+    {
+        octomap::point3d c = it.getCoordinate();
+        double avg = costAverage(octree, c, radius);
+        it->setValue(avg);
+    }
+}
+
 void f(SScriptCallBack *p, const char *cmd, f_in *in, f_out *out)
 {
     OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
@@ -675,7 +771,216 @@ void f(SScriptCallBack *p, const char *cmd, f_in *in, f_out *out)
 
         gnd->updateNode(c, true);
     }
+    computeCostmap(gnd);
+    for(int i = 0; i < 8; i++) smoothCostmap(gnd);
     octree->prune();
+}
+
+struct Vertex
+{
+    octomap::point3d coord;
+    const OcTreeNode *node;
+};
+
+struct Edge
+{
+    double weight;
+};
+
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, Vertex, Edge> Graph;
+typedef boost::graph_traits<Graph>::vertex_descriptor VertexDesc;
+typedef boost::graph_traits<Graph>::edge_descriptor EdgeDesc;
+typedef boost::graph_traits<Graph>::vertex_iterator VertexIter;
+typedef boost::graph_traits<Graph>::edge_iterator EdgeIter;
+
+struct GraphContainer
+{
+    std::map<const OcTreeNode*, VertexDesc> revmap;
+    Graph graph;
+    double minWeight = 1.0;
+    double maxWeight = 2.0;
+
+    VertexDesc vertexAt(const OcTreeNode *node)
+    {
+        return revmap.at(node);
+    }
+
+    void addVertex(const OcTreeNode &node, const octomap::point3d &point)
+    {
+        VertexDesc vd = boost::add_vertex(graph);
+        graph[vd].coord = point;
+        graph[vd].node = &node;
+        revmap[&node] = vd;
+    }
+
+    void addEdge(const OcTreeNode &node1, const OcTreeNode &node2, double weight)
+    {
+        VertexDesc v1 = revmap.at(&node1), v2 = revmap.at(&node2);
+        if(v1 == v2) return;
+        EdgeDesc e; bool added;
+        boost::tie(e, added) = boost::add_edge(v1, v2, graph);
+        graph[e].weight = weight;
+        maxWeight = fmax(maxWeight, weight);
+    }
+};
+template<> std::string Handle<GraphContainer>::tag() { return "Graph"; }
+
+void createGraph(SScriptCallBack *p, const char *cmd, createGraph_in *in, createGraph_out *out)
+{
+    OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
+    if(!octree)
+        throw std::string("invalid OcTree handle");
+
+    // build vertex set
+    GraphContainer *g = new GraphContainer();
+    OcTree::leaf_iterator begin = octree->begin_leafs(),
+        end = octree->end_leafs();
+    for(OcTree::leaf_iterator it = begin; it != end; ++it)
+        //if(octree->isNodeOccupied(*it))
+            g->addVertex(*it, it.getCoordinate());
+
+    // add edges:
+    float res = octree->getResolution();
+    const octomap::point3d ri(in->connRadius[0], in->connRadius[1], in->connRadius[2]);
+    const octomap::point3d r = ri * res;
+    for(OcTree::leaf_iterator it = begin; it != end; ++it)
+    {
+        //if(!octree->isNodeOccupied(*it)) continue;
+        octomap::point3d coord = it.getCoordinate();
+        OcTree::leaf_bbx_iterator begin1 = octree->begin_leafs_bbx(coord - r, coord + r),
+            end1 = octree->end_leafs_bbx();
+        for(OcTree::leaf_bbx_iterator it1 = begin1; it1 != end1; ++it1)
+        {
+            //if(!octree->isNodeOccupied(*it1)) continue;
+            octomap::point3d coord1 = it1.getCoordinate();
+            double weight = in->weightConst;
+            weight += in->weightDist * coord.distance(coord1);
+            weight += in->weightSqDist[0] * pow(coord.x() - coord1.x(), 2);
+            weight += in->weightSqDist[1] * pow(coord.y() - coord1.y(), 2);
+            weight += in->weightSqDist[2] * pow(coord.z() - coord1.z(), 2);
+            weight += 100 * it1->getValue();
+            g->addEdge(*it, *it1, weight);
+        }
+    }
+
+    out->graphHandle = Handle<GraphContainer>::str(g);
+}
+
+void addGraphDrawingObject(SScriptCallBack *p, const char *cmd, addGraphDrawingObject_in *in, addGraphDrawingObject_out *out)
+{
+    GraphContainer *g = Handle<GraphContainer>::obj(in->graphHandle);
+    if(!g)
+        throw std::string("invalid Graph handle");
+
+    simFloat color[] = {1.0, 0.0, 0.0};
+    simInt handle = simAddDrawingObject(sim_drawing_lines + sim_drawing_itemcolors, 3, 0.0, -1, 1000000, &color[0], NULL, NULL, NULL);
+    simFloat data[10];
+
+    EdgeIter ei, ei_end;
+    for(boost::tie(ei, ei_end) = boost::edges(g->graph); ei != ei_end; ++ei)
+    {
+        VertexDesc v0 = boost::source(*ei, g->graph),
+                   v1 = boost::target(*ei, g->graph);
+        octomap::point3d p0 = g->graph[v0].coord,
+            p1 = g->graph[v1].coord;
+        // first segment position:
+        data[0] = p0.x();
+        data[1] = p0.y();
+        data[2] = p0.z();
+        // second segment position:
+        data[3] = p1.x();
+        data[4] = p1.y();
+        data[5] = p1.z();
+        // color:
+        double w = (g->graph[*ei].weight - g->minWeight) / (g->maxWeight - g->minWeight);
+        valueColor(w, data[6], data[7], data[8]);
+        // size:
+        data[9] = 3;
+        simInt ret = simAddDrawingObjectItem(handle, &data[0]);
+        if(ret != 1)
+        {
+            // TODO: set error
+            break;
+        }
+    }
+
+    out->handle = handle;
+}
+
+void destroyGraph(SScriptCallBack *p, const char *cmd, destroyGraph_in *in, destroyGraph_out *out)
+{
+    GraphContainer *g = Handle<GraphContainer>::obj(in->graphHandle);
+    if(!g)
+        throw std::string("invalid Graph handle");
+    delete g;
+}
+
+VertexDesc closestVertexDescriptor(GraphContainer *g, octomap::point3d p)
+{
+    double bestDist = -1;
+    VertexDesc v;
+    for(auto &kv : g->revmap)
+    {
+        double dist = p.distance(g->graph[kv.second].coord);
+        if(dist < bestDist || bestDist < 0)
+        {
+            bestDist = dist;
+            v = kv.second;
+        }
+    }
+    return v;
+}
+
+void dijkstra(SScriptCallBack *p, const char *cmd, dijkstra_in *in, dijkstra_out *out)
+{
+    GraphContainer *g = Handle<GraphContainer>::obj(in->graphHandle);
+    if(!g)
+        throw std::string("invalid Graph handle");
+    octomap::point3d startPos(in->startPos[0], in->startPos[1], in->startPos[2]);
+    octomap::point3d goalPos(in->goalPos[0], in->goalPos[1], in->goalPos[2]);
+    VertexDesc start = closestVertexDescriptor(g, startPos),
+               goal = closestVertexDescriptor(g, goalPos);
+    auto idmap = boost::get(boost::vertex_index, g->graph);
+    std::vector<VertexDesc> predecessors(boost::num_vertices(g->graph));
+    std::vector<double> distances(boost::num_vertices(g->graph));
+    // we want all paths to goal (instead of all paths from start, like it usually is with dijkstra)
+    dijkstra_shortest_paths(g->graph, goal,
+        boost::weight_map(boost::get(&Edge::weight, g->graph))
+        .distance_map(boost::make_iterator_property_map(distances.begin(), idmap))
+        .predecessor_map(boost::make_iterator_property_map(predecessors.begin(), idmap))
+    );
+    std::vector<VertexDesc> path;
+    VertexDesc current = start;
+    while(1)
+    {
+        auto c = g->graph[current].coord;
+        out->path.push_back(c.x());
+        out->path.push_back(c.y());
+        out->path.push_back(c.z());
+        if(current == predecessors[current]) break;
+        current = predecessors[current];
+    }
+
+    // distance map into octree
+    if(in->createDistOctree)
+    {
+        int maxd = 0;
+        for(VertexDesc v = 0; v < boost::num_vertices(g->graph); v++)
+        {
+            if(distances[v] > 2e9) continue;
+            if(distances[v] > maxd) maxd = distances[v];
+        }
+        OcTree *distOctree = new OcTree(in->distOctreeResolution);
+        out->distOctreeHandle = Handle<OcTree>::str(distOctree);
+        for(VertexDesc v = 0; v < boost::num_vertices(g->graph); v++)
+        {
+            if(distances[v] > 2e9) continue;
+            auto c = g->graph[v].coord;
+            float d = float(distances[v]) / float(maxd);
+            distOctree->updateNode(c, d);
+            distOctree->setNodeValue(c, d);
+        }
+    }
 }
 
 void getRoot(SScriptCallBack *p, const char *cmd, getRoot_in *in, getRoot_out *out)

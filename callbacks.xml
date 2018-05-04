@@ -928,6 +928,82 @@
             </param>
         </return>
     </command>
+    <command name="createGraph">
+        <description></description>
+        <params>
+            <param name="octreeHandle" type="string">
+                <description>handle to OcTree</description>
+            </param>
+            <param name="connRadius" type="table" item-type="int" min-size="3" max-size="3" default="{1, 1, 3}">
+                <description>connectivity radius along the X/Y/Z directions (in number of voxels)</description>
+            </param>
+            <param name="weightConst" type="float" default="1.0">
+                <description>constant weight component</description>
+            </param>
+            <param name="weightDist" type="float" default="0.0">
+                <description>distance weight component</description>
+            </param>
+            <param name="weightSqDist" type="table" item-type="float" default="{1.0, 1.0, 4.0}">
+                <description>squared distance weight component along the X/Y/Z directions</description>
+            </param>
+        </params>
+        <return>
+            <param name="graphHandle" type="string">
+                <description>a handle to the created graph</description>
+            </param>
+        </return>
+    </command>
+    <command name="addGraphDrawingObject">
+        <description></description>
+        <params>
+            <param name="graphHandle" type="string">
+                <description>graph handle</description>
+            </param>
+        </params>
+        <return>
+            <param name="handle" type="int" default="0">
+                <description>0 for failure, otherwise the handle to the drawing object</description>
+            </param>
+        </return>
+    </command>
+    <command name="destroyGraph">
+        <description></description>
+        <params>
+            <param name="graphHandle" type="string">
+                <description>graph handle</description>
+            </param>
+        </params>
+        <return>
+        </return>
+    </command>
+    <command name="dijkstra">
+        <description></description>
+        <params>
+            <param name="graphHandle" type="string">
+                <description>graph handle</description>
+            </param>
+            <param name="startPos" type="table" item-type="float" min-size="3" max-size="3">
+                <description>start position</description>
+            </param>
+            <param name="goalPos" type="table" item-type="float" min-size="3" max-size="3">
+                <description>goal position</description>
+            </param>
+            <param name="createDistOctree" type="bool" default="false">
+                <description>create a new octree containing the distances for all vertices in the graph</description>
+            </param>
+            <param name="distOctreeResolution" type="float" default="0.1">
+                <description>resolution of distOctree</description>
+            </param>
+        </params>
+        <return>
+            <param name="path" type="table" item-type="float">
+                <description>path (x1,y1,z1,x2,y2,z2,...)</description>
+            </param>
+            <param name="distOctreeHandle" type="string">
+                <description>a new octree containing the distances for all vertices in the graph</description>
+            </param>
+        </return>
+    </command>
     <enum name="UpdateMode" item-prefix="update_" base="37401">
         <item name="log_odds">
         </item>
