@@ -955,7 +955,8 @@ void search(SScriptCallBack *p, const char *cmd, search_in *in, search_out *out)
         throw std::string("invalid OcTree handle");
     octomap::point3d coord = vectorToPoint(in->coord);
     OcTreeNode *node = octree->search(coord, in->depth);
-    out->nodeHandle = Handle<OcTreeNode>::str(node);
+    if(node)
+        out->nodeHandle = Handle<OcTreeNode>::str(node);
 }
 
 void addValue(SScriptCallBack *p, const char *cmd, addValue_in *in, addValue_out *out)

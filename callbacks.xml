@@ -525,7 +525,7 @@
         </return>
     </command>
     <command name="search">
-        <description>Search and return a node in the OcTree.</description>
+        <description>Search a node overlapping given coordinate in the OcTree.</description>
         <see-also>
             <command name="getRoot" />
             <command name="addValue" />
@@ -557,8 +557,8 @@
             </param>
         </params>
         <return>
-            <param name="nodeHandle" type="string" default="&quot;&quot;">
-                <description>node handle, or '' if not found</description>
+            <param name="nodeHandle" type="string" nullable="true">
+                <description>node handle, or nil if not found</description>
             </param>
         </return>
     </command>
