@@ -10,7 +10,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 find_package(Boost REQUIRED COMPONENTS system regex)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
-find_package(VREP REQUIRED)
+find_package(VREP 3.5.0 REQUIRED)
 find_package(Octomap REQUIRED)
 
 include_directories(${VREP_INCLUDE})
