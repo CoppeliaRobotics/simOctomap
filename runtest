@@ -2,19 +2,19 @@
 
 PLATFORM=`uname`
 
-# find V-REP executable
+# find CoppeliaSim executable
 if [[ "$PLATFORM" = "Darwin" ]]; then
     # Mac platform
-    if [[ -x ../../vrep.app/Contents/MacOS/vrep ]]; then
-        VREP="../../vrep.app/Contents/MacOS/vrep"
+    if [[ -x ../../coppeliaSim.app/Contents/MacOS/coppeliaSim ]]; then
+        COPPELIASIM="../../coppeliaSim.app/Contents/MacOS/coppeliaSim"
     fi
 elif [[ "$PLATFORM" = "Linux" ]]; then
     # Linux platform
     :
 fi
 
-if [[ ! -x "$VREP" ]]; then
-    echo "Please fix me: I don't know ho to find V-REP executable on this platform ($PLATFORM)" 1>&2
+if [[ ! -x "$COPPELIASIM" ]]; then
+    echo "Please fix me: I don't know ho to find CoppeliaSim executable on this platform ($PLATFORM)" 1>&2
     exit 1
 fi
 
@@ -24,5 +24,5 @@ if [[ -f "$PWD/$SCENE" ]]; then
     SCENE="$PWD/$SCENE"
 fi
 
-"$VREP" -h -s -q "$1"
+"$COPPELIASIM" -h -s -q "$1"
 

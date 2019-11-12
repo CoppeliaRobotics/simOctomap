@@ -13,8 +13,8 @@
 #include <boost/property_map/property_map.hpp>
 #include <boost/graph/graph_utility.hpp>
 
-#include "v_repPlusPlus/Plugin.h"
-#include "v_repPlusPlus/Handle.h"
+#include "simPlusPlus/Plugin.h"
+#include "simPlusPlus/Handle.h"
 #include "plugin.h"
 #include "stubs.h"
 
@@ -24,7 +24,7 @@
 
 #define PROXIMITY_SENSOR_INFLATE 0.001
 
-using vrep::Handle;
+using sim::Handle;
 using OcTree = octomap::ColorOcTree;
 using OcTreeKey = octomap::OcTreeKey;
 using OcTreeNode = octomap::ColorOcTreeNode;
@@ -179,7 +179,7 @@ void createFromScene(SScriptCallBack *p, const char *cmd, createFromScene_in *in
     octomap::point3d boundsMaxSnap = snapCoord(octree, depth, boundsMax);
     double nodeSize = octree->getNodeSize(depth);
 
-    // V-REP's proximity sensors, by depth:
+    // CoppeliaSim's proximity sensors, by depth:
     std::map<int,simInt> proximitySensors;
 
     for(double z = boundsMinSnap.z(); z <= boundsMaxSnap.z(); z += nodeSize)
@@ -1130,7 +1130,7 @@ void getOccupancy(SScriptCallBack *p, const char *cmd, getOccupancy_in *in, getO
     out->occupancy = node->getOccupancy();
 }
 
-class Plugin : public vrep::Plugin
+class Plugin : public sim::Plugin
 {
 public:
     void onStart()
@@ -1143,4 +1143,4 @@ public:
     }
 };
 
-VREP_PLUGIN(PLUGIN_NAME, PLUGIN_VERSION, Plugin)
+SIM_PLUGIN(PLUGIN_NAME, PLUGIN_VERSION, Plugin)
