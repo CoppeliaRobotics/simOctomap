@@ -38,5 +38,5 @@ set(SOURCES
 add_library(simExtOctomap SHARED ${SOURCES})
 target_link_libraries(simExtOctomap ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${COPPELIASIM_LIBRARIES})
 
-install(TARGETS simExtOctomap DESTINATION ${COPPELIASIM_ROOT_DIR})
+install(TARGETS simExtOctomap DESTINATION ${COPPELIASIM_PLUGINS_DIR})
 
