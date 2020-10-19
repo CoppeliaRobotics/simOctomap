@@ -223,11 +223,11 @@ public:
     void createFromScene(createFromScene_in *in, createFromScene_out *out)
     {
         if(in->boundsMin.size() != 3 || in->boundsMax.size() != 3)
-            throw std::string("bounds must have 3 elements");
+            throw std::runtime_error("bounds must have 3 elements");
 
         for(int i = 0; i < 3; i++)
             if(in->boundsMin[i] >= in->boundsMax[i])
-                throw std::string("bounds min must be strictly lower than max");
+                throw std::runtime_error("bounds min must be strictly lower than max");
 
         OcTree *octree = new OcTree(in->resolution);
 
@@ -288,7 +288,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         delete octree;
     }
 
@@ -328,7 +328,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         octree->clear();
     }
 
@@ -336,7 +336,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         octomap::point3d coord = vectorToPoint(in->coord);
         OcTreeKey key = octree->coordToKey(coord);
         out->key = keyToVector(key);
@@ -346,7 +346,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         OcTreeKey key = vectorToKey(in->key);
         octomap::point3d coord = octree->keyToCoord(key);
         out->coord = pointToVector(coord);
@@ -356,7 +356,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         octomap::point3d coord = vectorToPoint(in->coord);
         octree->deleteNode(coord, in->depth);
     }
@@ -365,7 +365,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         OcTreeKey key = vectorToKey(in->key);
         octree->deleteNode(key, in->depth);
     }
@@ -374,7 +374,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         double minx, miny, minz, maxx, maxy, maxz, sizex, sizey, sizez;
         octree->getMetricMin(minx, miny, minz);
         octree->getMetricMax(maxx, maxy, maxz);
@@ -388,7 +388,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         out->size = octree->getNodeSize(in->depth);
     }
 
@@ -396,7 +396,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         out->n = octree->getNumLeafNodes();
     }
 
@@ -404,7 +404,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         out->size = octree->size();
     }
 
@@ -412,7 +412,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         out->volume = octree->volume();
     }
 
@@ -420,7 +420,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         out->res = octree->getResolution();
     }
 
@@ -428,7 +428,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         out->depth = octree->getTreeDepth();
     }
 
@@ -436,7 +436,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         out->treeType = octree->getTreeType();
     }
 
@@ -444,7 +444,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         octree->prune();
     }
 
@@ -452,7 +452,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         octomap::point3d coord = vectorToPoint(in->coord);
         switch(in->mode)
         {
@@ -463,7 +463,7 @@ public:
             octree->updateNode(coord, in->occupancy);
             break;
         default:
-            throw std::string("invalid update mode");
+            throw std::runtime_error("invalid update mode");
         }
     }
 
@@ -471,7 +471,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         OcTreeKey key = vectorToKey(in->key);
         switch(in->mode)
         {
@@ -482,7 +482,7 @@ public:
             octree->updateNode(key, in->occupancy);
             break;
         default:
-            throw std::string("invalid update mode");
+            throw std::runtime_error("invalid update mode");
         }
     }
 
@@ -490,15 +490,15 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
 
         if(!in->points.size()) return;
 
         if(in->origin.size() != 3)
-            throw std::string("origin must be a table of size 3");
+            throw std::runtime_error("origin must be a table of size 3");
 
         if(in->points.size() % 3)
-            throw std::string("points size is not a multiple of 3");
+            throw std::runtime_error("points size is not a multiple of 3");
 
         int n = in->points.size() / 3;
         octomap::Pointcloud cloud;
@@ -513,13 +513,13 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
 
         if(in->origin.size() != 3)
-            throw std::string("origin must be a table of size 3");
+            throw std::runtime_error("origin must be a table of size 3");
 
         if(in->direction.size() != 3)
-            throw std::string("direction must be a table of size 3");
+            throw std::runtime_error("direction must be a table of size 3");
 
         octomap::point3d origin = vectorToPoint(in->origin);
         octomap::point3d direction = vectorToPoint(in->direction);
@@ -532,7 +532,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         octree->write(in->filename);
     }
 
@@ -540,7 +540,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         octree->writeBinary(in->filename);
     }
 
@@ -574,10 +574,10 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
 
         if(in->voxelColor == sim_octomap_voxelcolor_flat && in->flatColor.size() != 3)
-            throw std::string("flatColor must have 3 elements");
+            throw std::runtime_error("flatColor must have 3 elements");
 
         double minX, minY, minZ, sizeX, sizeY, sizeZ;
         octree->getMetricMin(minX, minY, minZ);
@@ -637,7 +637,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         octomap::point3d coord = vectorToPoint(in->coord);
         OcTreeNode *node = octree->search(coord, in->depth);
         if(!node)
@@ -654,7 +654,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         OcTreeKey key = vectorToKey(in->key);
         OcTreeNode *node = octree->search(key, in->depth);
         if(!node)
@@ -750,7 +750,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         octree->expand();
 
         OcTree *gnd = new OcTree(octree->getResolution());
@@ -797,7 +797,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
 
         // build vertex set
         GraphContainer *g = new GraphContainer();
@@ -838,7 +838,7 @@ public:
     {
         GraphContainer *g = Handle<GraphContainer>::obj(in->graphHandle);
         if(!g)
-            throw std::string("invalid Graph handle");
+            throw std::runtime_error("invalid Graph handle");
 
         simFloat color[] = {1.0, 0.0, 0.0};
         simInt handle = simAddDrawingObject(sim_drawing_lines + sim_drawing_itemcolors, 3, 0.0, -1, 1000000, &color[0], NULL, NULL, NULL);
@@ -879,7 +879,7 @@ public:
     {
         GraphContainer *g = Handle<GraphContainer>::obj(in->graphHandle);
         if(!g)
-            throw std::string("invalid Graph handle");
+            throw std::runtime_error("invalid Graph handle");
         delete g;
     }
 
@@ -903,7 +903,7 @@ public:
     {
         GraphContainer *g = Handle<GraphContainer>::obj(in->graphHandle);
         if(!g)
-            throw std::string("invalid Graph handle");
+            throw std::runtime_error("invalid Graph handle");
         octomap::point3d startPos(in->startPos[0], in->startPos[1], in->startPos[2]);
         octomap::point3d goalPos(in->goalPos[0], in->goalPos[1], in->goalPos[2]);
         VertexDesc start = closestVertexDescriptor(g, startPos),
@@ -955,7 +955,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         OcTreeNode *node = octree->getRoot();
         out->nodeHandle = Handle<OcTreeNode>::str(node);
     }
@@ -964,7 +964,7 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         octomap::point3d coord = vectorToPoint(in->coord);
         OcTreeNode *node = octree->search(coord, in->depth);
         if(node)
@@ -975,7 +975,7 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         node->addValue(in->v);
     }
 
@@ -983,12 +983,12 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         if(in->i < 0 || in->i >= 8)
-            throw std::string("child index must be between 0 and 7");
+            throw std::runtime_error("child index must be between 0 and 7");
         octree->deleteNodeChild(node, in->i);
     }
 
@@ -996,10 +996,10 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         octree->expandNode(node);
     }
 
@@ -1007,7 +1007,7 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         node->setLogOdds(in->v);
     }
 
@@ -1015,7 +1015,7 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         node->setValue(in->v);
     }
 
@@ -1023,9 +1023,9 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         if(in->r < 0 || in->r > 255 || in->g < 0 || in->g > 255 || in->b < 0 || in->b > 255)
-            throw std::string("color component must be in 0..255 range");
+            throw std::runtime_error("color component must be in 0..255 range");
         OcTreeNode::Color c(in->r, in->g, in->b);
         node->setColor(c);
     }
@@ -1034,7 +1034,7 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         node->updateOccupancyChildren();
     }
 
@@ -1042,9 +1042,9 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         if(in->i < 0 || in->i >= 8)
-            throw std::string("child index must be between 0 and 7");
+            throw std::runtime_error("child index must be between 0 and 7");
         out->exists = node->childExists(in->i);
     }
 
@@ -1052,10 +1052,10 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         out->collapsible = octree->isNodeCollapsible(node);
     }
 
@@ -1063,12 +1063,12 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         if(in->i < 0 || in->i >= 8)
-            throw std::string("child index must be between 0 and 7");
+            throw std::runtime_error("child index must be between 0 and 7");
         octree->createNodeChild(node, in->i);
     }
 
@@ -1076,7 +1076,7 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         out->hasChildren = node->hasChildren();
     }
 
@@ -1084,10 +1084,10 @@ public:
     {
         OcTree *octree = Handle<OcTree>::obj(in->octreeHandle);
         if(!octree)
-            throw std::string("invalid OcTree handle");
+            throw std::runtime_error("invalid OcTree handle");
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         octree->pruneNode(node);
     }
 
@@ -1095,7 +1095,7 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         out->value = node->getValue();
     }
 
@@ -1103,7 +1103,7 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         OcTreeNode::Color c = node->getColor();
         out->r = c.r;
         out->g = c.g;
@@ -1114,7 +1114,7 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         out->value = node->getLogOdds();
     }
 
@@ -1122,7 +1122,7 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         out->value = node->getMaxChildLogOdds();
     }
 
@@ -1130,7 +1130,7 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         out->value = node->getMeanChildLogOdds();
     }
 
@@ -1138,7 +1138,7 @@ public:
     {
         OcTreeNode *node = Handle<OcTreeNode>::obj(in->nodeHandle);
         if(!node)
-            throw std::string("invalid OcTreeNode handle");
+            throw std::runtime_error("invalid OcTreeNode handle");
         out->occupancy = node->getOccupancy();
     }
 };
