@@ -15,6 +15,7 @@
 
 #include "simPlusPlus/Plugin.h"
 #include "simPlusPlus/Handle.h"
+#include "config.h"
 #include "plugin.h"
 #include "stubs.h"
 
