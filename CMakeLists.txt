@@ -4,7 +4,7 @@ project(simExtOctomap)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_MACOSX_RPATH 1)
 
-find_package(Boost REQUIRED COMPONENTS system regex)
+find_package(Boost REQUIRED COMPONENTS graph)
 
 if(NOT LIBPLUGIN_DIR)
     if(DEFINED ENV{COPPELIASIM_ROOT_DIR})
@@ -20,22 +20,14 @@ set(CMAKE_MODULE_PATH
 find_package(CoppeliaSim 4.1.0.0 REQUIRED)
 find_package(Octomap REQUIRED)
 
-include_directories(${COPPELIASIM_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
-include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${OCTOMAP_INCLUDE_DIR})
 
 coppeliasim_generate_stubs(${CMAKE_CURRENT_BINARY_DIR}/generated XML_FILE ${CMAKE_CURRENT_SOURCE_DIR}/callbacks.xml LUA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/simExtOctomap.lua)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
-set(SOURCES
-    plugin.cpp
-    ${COPPELIASIM_EXPORTED_SOURCES}
-)
-add_library(simExtOctomap SHARED ${SOURCES})
-target_link_libraries(simExtOctomap ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${COPPELIASIM_LIBRARIES})
-
-install(TARGETS simExtOctomap DESTINATION ${COPPELIASIM_PLUGINS_DIR})
-
+coppeliasim_add_plugin(simExtOctomap SOURCES plugin.cpp)
+target_link_libraries(simExtOctomap Boost::graph)
+target_link_libraries(simExtOctomap ${OCTOMAP_LIBRARIES})
