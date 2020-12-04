@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <?xml-stylesheet type="text/xsl" href="callbacks.xsl"?>
 
-<plugin name="Octomap" short-name="Octomap" author="federico.ferri.it@gmail.com">
+<plugin name="Octomap" author="federico.ferri.it@gmail.com">
     <description>The list of API functions below provide an interface to the Octomap library.</description>
     <command name="create">
         <description>Create an OcTree.</description>
