@@ -934,7 +934,7 @@
             <param name="octreeHandle" type="string">
                 <description>handle to OcTree</description>
             </param>
-            <param name="connRadius" type="table" item-type="int" min-size="3" max-size="3" default="{1, 1, 3}">
+            <param name="connRadius" type="table" item-type="int" size="3" default="{1, 1, 3}">
                 <description>connectivity radius along the X/Y/Z directions (in number of voxels)</description>
             </param>
             <param name="weightConst" type="float" default="1.0">
@@ -982,10 +982,10 @@
             <param name="graphHandle" type="string">
                 <description>graph handle</description>
             </param>
-            <param name="startPos" type="table" item-type="float" min-size="3" max-size="3">
+            <param name="startPos" type="table" item-type="float" size="3">
                 <description>start position</description>
             </param>
-            <param name="goalPos" type="table" item-type="float" min-size="3" max-size="3">
+            <param name="goalPos" type="table" item-type="float" size="3">
                 <description>goal position</description>
             </param>
             <param name="createDistOctree" type="bool" default="false">
