@@ -106,7 +106,7 @@ public:
     void create(create_in *in, create_out *out)
     {
         OcTree *octree = new OcTree(in->resolution);
-        out->octreeHandle = treeHandles.add(octree, in->_scriptID);
+        out->octreeHandle = treeHandles.add(octree, in->_.scriptID);
     }
 
     simInt createProximitySensor(float size)
@@ -291,7 +291,7 @@ public:
         simRemoveObject(sens);
 #endif
 
-        out->octreeHandle = treeHandles.add(octree, in->_scriptID);
+        out->octreeHandle = treeHandles.add(octree, in->_.scriptID);
     }
 
     void destroy(destroy_in *in, destroy_out *out)
@@ -764,7 +764,7 @@ public:
         octree->expand();
 
         OcTree *gnd = new OcTree(octree->getResolution());
-        out->gndOctreeHandle = treeHandles.add(gnd, in->_scriptID);
+        out->gndOctreeHandle = treeHandles.add(gnd, in->_.scriptID);
 
         octomap::point3d rxyz(in->s, in->s, in->h), rxy(in->s, in->s, 0), rz(0, 0, in->h), rz0(0, 0, octree->getResolution());
 
@@ -841,7 +841,7 @@ public:
             }
         }
 
-        out->graphHandle = graphContainerHandles.add(g, in->_scriptID);
+        out->graphHandle = graphContainerHandles.add(g, in->_.scriptID);
     }
 
     void addGraphDrawingObject(addGraphDrawingObject_in *in, addGraphDrawingObject_out *out)
@@ -943,7 +943,7 @@ public:
                 if(distances[v] > maxd) maxd = distances[v];
             }
             OcTree *distOctree = new OcTree(in->distOctreeResolution);
-            out->distOctreeHandle = treeHandles.add(distOctree, in->_scriptID);
+            out->distOctreeHandle = treeHandles.add(distOctree, in->_.scriptID);
             for(VertexDesc v = 0; v < boost::num_vertices(g->graph); v++)
             {
                 if(distances[v] > 2e9) continue;
