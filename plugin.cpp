@@ -109,9 +109,9 @@ public:
         out->octreeHandle = treeHandles.add(octree, in->_.scriptID);
     }
 
-    simInt createProximitySensor(float size)
+    int createProximitySensor(float size)
     {
-        simInt options = 0 // sensor options:
+        int options = 0 // sensor options:
                 +1*1   // the sensor will be explicitely handled
                 +1*2   // the detection volumes are not shown when detecting something
                 +1*4   // the detection volumes are not shown when not detecting anything
@@ -122,7 +122,7 @@ public:
                 +0*128 // occlusion check is active
                 +0*256 // smallest distance threshold will be active
                 +0*512;// randomized detection (only with ray-type proximity sensors)
-        simInt intParams[] = {
+        int intParams[] = {
                 0,     // face count (volume description)
                 0,     // face count far (volume description)
                 0,     // subdivisions (volume description)
@@ -132,7 +132,7 @@ public:
                 0,     // reserved. Set to 0
                 0      // reserved. Set to 0
         };
-        simFloat floatParams[] = {
+        float floatParams[] = {
                 0.0,   // offset (volume description)
                 size,  // range (volume description)
                 size,  // x size (volume description)
@@ -159,7 +159,7 @@ public:
         return coord1;
     }
 
-    void measureOccupancy(OcTree *octree, int depth, octomap::point3d coord, const octomap::point3d& boundsMin, const octomap::point3d& boundsMax, std::map<int,simInt>& proximitySensors)
+    void measureOccupancy(OcTree *octree, int depth, octomap::point3d coord, const octomap::point3d& boundsMin, const octomap::point3d& boundsMax, std::map<int,int>& proximitySensors)
     {
         double nodeSize = octree->getNodeSize(depth);
 
@@ -173,14 +173,14 @@ public:
         {
             proximitySensors[depth] = createProximitySensor(nodeSize + PROXIMITY_SENSOR_INFLATE);
         }
-        simInt sens = proximitySensors[depth];
+        int sens = proximitySensors[depth];
 
-        simFloat p[4];
+        float p[4];
         p[0] = coord.x();
         p[1] = coord.y();
         p[2] = coord.z() - nodeSize * 0.5 - PROXIMITY_SENSOR_INFLATE * 0.5; // proximity sensor's origin is in its XY plane!
         simSetObjectPosition(sens, -1, &p[0]);
-        simInt r = simCheckProximitySensor(sens, sim_handle_all, &p[0]);
+        int r = simCheckProximitySensor(sens, sim_handle_all, &p[0]);
 
         if(r == 1) // some obstacle detected
         {
@@ -251,7 +251,7 @@ public:
         double nodeSize = octree->getNodeSize(depth);
 
         // CoppeliaSim's proximity sensors, by depth:
-        std::map<int,simInt> proximitySensors;
+        std::map<int,int> proximitySensors;
 
         for(double z = boundsMinSnap.z(); z <= boundsMaxSnap.z(); z += nodeSize)
         {
@@ -264,11 +264,11 @@ public:
             }
         }
 
-        for(std::map<int,simInt>::iterator it = proximitySensors.begin(); it != proximitySensors.end(); ++it)
+        for(std::map<int,int>::iterator it = proximitySensors.begin(); it != proximitySensors.end(); ++it)
             simRemoveObject(it->second);
 
 #else
-        simInt sens = createProximitySensor(in->resolution + PROXIMITY_SENSOR_INFLATE);
+        int sens = createProximitySensor(in->resolution + PROXIMITY_SENSOR_INFLATE);
 
         for(float z = in->boundsMin[2]; z <= in->boundsMax[2]; z += in->resolution)
         {
@@ -276,12 +276,12 @@ public:
             {
                 for(float x = in->boundsMin[0]; x <= in->boundsMax[0]; x += in->resolution)
                 {
-                    simFloat p[4];
+                    float p[4];
                     p[0] = x;
                     p[1] = y;
                     p[2] = z - 0.5 * in->resolution - 0.5 * PROXIMITY_SENSOR_INFLATE;
                     simSetObjectPosition(sens, -1, &p[0]);
-                    simInt r = simCheckProximitySensor(sens, sim_handle_all, &p[0]);
+                    int r = simCheckProximitySensor(sens, sim_handle_all, &p[0]);
                     bool occ = r == 1;
                     octree->updateNode(x, y, z, occ);
                 }
@@ -593,8 +593,8 @@ public:
         octree->getMetricMin(minX, minY, minZ);
         octree->getMetricSize(sizeX, sizeY, sizeZ);
 
-        simInt handle = simAddDrawingObject(sim_drawing_cubepoints + sim_drawing_itemcolors + sim_drawing_itemsizes, 0, 0.0, -1, 1000000, NULL, NULL, NULL, NULL);
-        simFloat data[10];
+        int handle = simAddDrawingObject(sim_drawing_cubepoints + sim_drawing_itemcolors + sim_drawing_itemsizes, 0, 0.0, -1, 1000000, NULL, NULL, NULL, NULL);
+        float data[10];
 
         OcTree::leaf_iterator begin = octree->begin(in->depth), end = octree->end();
         for(OcTree::leaf_iterator it = begin; it != end; ++it)
@@ -632,7 +632,7 @@ public:
             // size:
             data[9] = it.getSize() * 0.5;
 
-            simInt ret = simAddDrawingObjectItem(handle, &data[0]);
+            int ret = simAddDrawingObjectItem(handle, &data[0]);
             if(ret != 1)
             {
                 // TODO: set error
@@ -848,9 +848,9 @@ public:
     {
         GraphContainer *g = graphContainerHandles.get(in->graphHandle);
 
-        simFloat color[] = {1.0, 0.0, 0.0};
-        simInt handle = simAddDrawingObject(sim_drawing_lines + sim_drawing_itemcolors, 3, 0.0, -1, 1000000, &color[0], NULL, NULL, NULL);
-        simFloat data[10];
+        float color[] = {1.0, 0.0, 0.0};
+        int handle = simAddDrawingObject(sim_drawing_lines + sim_drawing_itemcolors, 3, 0.0, -1, 1000000, &color[0], NULL, NULL, NULL);
+        float data[10];
 
         EdgeIter ei, ei_end;
         for(boost::tie(ei, ei_end) = boost::edges(g->graph); ei != ei_end; ++ei)
@@ -872,7 +872,7 @@ public:
             valueColor(w, data[6], data[7], data[8]);
             // size:
             data[9] = 3;
-            simInt ret = simAddDrawingObjectItem(handle, &data[0]);
+            int ret = simAddDrawingObjectItem(handle, &data[0]);
             if(ret != 1)
             {
                 // TODO: set error
