@@ -13,8 +13,8 @@
 #include <boost/property_map/property_map.hpp>
 #include <boost/graph/graph_utility.hpp>
 
-#include "simPlusPlus/Plugin.h"
-#include "simPlusPlus/Handle.h"
+#include <simPlusPlus/Plugin.h>
+#include <simPlusPlus/Handle.h>
 #include "config.h"
 #include "plugin.h"
 #include "stubs.h"
