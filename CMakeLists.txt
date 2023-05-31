@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.11)
-project(simExtOctomap)
+project(simOctomap)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_MACOSX_RPATH 1)
@@ -27,6 +27,6 @@ coppeliasim_generate_stubs(${CMAKE_CURRENT_BINARY_DIR}/generated XML_FILE ${CMAK
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
-coppeliasim_add_plugin(simExtOctomap SOURCES plugin.cpp)
-target_link_libraries(simExtOctomap Boost::graph)
-target_link_libraries(simExtOctomap ${OCTOMAP_LIBRARIES})
+coppeliasim_add_plugin(simOctomap SOURCES plugin.cpp)
+target_link_libraries(simOctomap Boost::graph)
+target_link_libraries(simOctomap ${OCTOMAP_LIBRARIES})
