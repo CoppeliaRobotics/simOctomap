@@ -466,10 +466,10 @@ public:
         octomap::point3d coord = vectorToPoint(in->coord);
         switch(in->mode)
         {
-        case sim_octomap_update_log_odds:
+        case simoctomap_update_log_odds:
             octree->updateNode(coord, in->log_odds);
             break;
-        case sim_octomap_update_occupancy:
+        case simoctomap_update_occupancy:
             octree->updateNode(coord, in->occupancy);
             break;
         default:
@@ -485,10 +485,10 @@ public:
         OcTreeKey key = vectorToKey(in->key);
         switch(in->mode)
         {
-        case sim_octomap_update_log_odds:
+        case simoctomap_update_log_odds:
             octree->updateNode(key, in->log_odds);
             break;
-        case sim_octomap_update_occupancy:
+        case simoctomap_update_occupancy:
             octree->updateNode(key, in->occupancy);
             break;
         default:
@@ -586,7 +586,7 @@ public:
         if(!octree)
             throw std::runtime_error("invalid OcTree handle");
 
-        if(in->voxelColor == sim_octomap_voxelcolor_flat && in->flatColor.size() != 3)
+        if(in->voxelColor == simoctomap_voxelcolor_flat && in->flatColor.size() != 3)
             throw std::runtime_error("flatColor must have 3 elements");
 
         double minX, minY, minZ, sizeX, sizeY, sizeZ;
@@ -611,21 +611,21 @@ public:
             // color:
             switch(in->voxelColor)
             {
-                case sim_octomap_voxelcolor_flat:
+                case simoctomap_voxelcolor_flat:
                     data[6] = in->flatColor[0];
                     data[7] = in->flatColor[1];
                     data[8] = in->flatColor[2];
                     break;
-                case sim_octomap_voxelcolor_x_axis:
+                case simoctomap_voxelcolor_x_axis:
                     valueColor((it.getX() - minX) / sizeX, data[6], data[7], data[8]);
                     break;
-                case sim_octomap_voxelcolor_y_axis:
+                case simoctomap_voxelcolor_y_axis:
                     valueColor((it.getY() - minY) / sizeY, data[6], data[7], data[8]);
                     break;
-                case sim_octomap_voxelcolor_z_axis:
+                case simoctomap_voxelcolor_z_axis:
                     valueColor((it.getZ() - minZ) / sizeZ, data[6], data[7], data[8]);
                     break;
-                case sim_octomap_voxelcolor_value:
+                case simoctomap_voxelcolor_value:
                     valueColor(it->getValue(), data[6], data[7], data[8]);
                     break;
             }
@@ -1151,5 +1151,5 @@ private:
     Handles<GraphContainer> graphContainerHandles;
 };
 
-SIM_PLUGIN(PLUGIN_NAME, PLUGIN_VERSION, Plugin)
+SIM_PLUGIN(Plugin)
 #include "stubsPlusPlus.cpp"
