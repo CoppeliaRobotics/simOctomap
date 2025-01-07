@@ -149,7 +149,7 @@ public:
                 0.0,   // reserved. Set to 0.0
                 0.0    // reserved. Set to 0.0
         };
-        return simCreateProximitySensor(sim_proximitysensor_pyramid_subtype, sim_objectspecialproperty_detectable_all, options, intParams, floatParams, NULL);
+        return simCreateProximitySensor(sim_proximitysensor_pyramid, sim_objectspecialproperty_detectable_all, options, intParams, floatParams, NULL);
     }
 
     octomap::point3d snapCoord(OcTree *octree, int depth, octomap::point3d coord)
